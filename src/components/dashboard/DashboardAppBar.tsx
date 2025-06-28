@@ -1,4 +1,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import {
   AppBar,
   Toolbar,
@@ -7,12 +9,9 @@ import {
 } from "@mui/material";
 import { ExitToApp } from "@mui/icons-material";
 
-interface DashboardAppBarProps {
-  userEmail?: string;
-}
-
-export const DashboardAppBar = ({ userEmail }: DashboardAppBarProps) => {
+export const DashboardAppBar = () => {
   const { signOut } = useAuthActions();
+  const { viewer } = useQuery(api.myFunctions.listNumbers, { count: 1 }) ?? {};
 
   const handleSignOut = () => {
     void signOut();
@@ -25,7 +24,7 @@ export const DashboardAppBar = ({ userEmail }: DashboardAppBarProps) => {
           Sprint Planner
         </Typography>
         <Typography variant="body2" sx={{ mr: 2 }}>
-          Welcome, {userEmail || "User"}!
+          Welcome, {viewer || "User"}!
         </Typography>
         <IconButton color="inherit" onClick={handleSignOut}>
           <ExitToApp />

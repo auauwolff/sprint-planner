@@ -1,4 +1,4 @@
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import {
   Card,
@@ -9,12 +9,9 @@ import {
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 
-interface DemoCardProps {
-  numbers?: number[];
-}
-
-export const DemoCard = ({ numbers }: DemoCardProps) => {
+export const DemoCard = () => {
   const addNumber = useMutation(api.myFunctions.addNumber);
+  const { numbers } = useQuery(api.myFunctions.listNumbers, { count: 10 }) ?? {};
 
   const handleAddNumber = () => {
     void addNumber({ value: Math.floor(Math.random() * 10) });

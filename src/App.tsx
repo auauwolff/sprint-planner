@@ -1,5 +1,6 @@
 import { Authenticated, Unauthenticated } from "convex/react";
-import { Dashboard, SignInForm } from "./components";
+import { Dashboard } from "./components/dashboard/Dashboard";
+import { SignInForm } from "./components/auth/SignInForm";
 
 const App = () => {
   return (
