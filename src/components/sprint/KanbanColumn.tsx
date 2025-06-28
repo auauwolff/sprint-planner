@@ -3,11 +3,17 @@ import { api } from "../../../convex/_generated/api";
 import {
   Box,
   Typography,
-  Paper,
+  Card,
   IconButton,
   Stack,
+  Avatar,
 } from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
+import {
+  Add as AddIcon,
+  CheckBoxOutlined,
+  PlayCircleOutline,
+  TaskAlt,
+} from "@mui/icons-material";
 import { TicketCard } from "./TicketCard";
 
 interface KanbanColumnProps {
@@ -17,36 +23,31 @@ interface KanbanColumnProps {
   sprintId: string;
 }
 
-export const KanbanColumn = ({ title, tickets, status, sprintId }: KanbanColumnProps) => {
+export const KanbanColumn = ({
+  title,
+  tickets,
+  status,
+  sprintId,
+}: KanbanColumnProps) => {
   const updateTicketStatus = useMutation(api.tickets.updateTicketStatus);
 
-  const getColumnColor = () => {
+  const getColumnIcon = () => {
     switch (status) {
       case "todo":
-        return "#e3f2fd"; // Light blue
+        return <CheckBoxOutlined />;
       case "inProgress":
-        return "#fff3e0"; // Light orange
+        return <PlayCircleOutline />;
       case "done":
-        return "#e8f5e8"; // Light green
+        return <TaskAlt />;
       default:
-        return "#f5f5f5";
+        return <CheckBoxOutlined />;
     }
   };
 
-  const getHeaderColor = () => {
-    switch (status) {
-      case "todo":
-        return "#1976d2"; // Blue
-      case "inProgress":
-        return "#f57c00"; // Orange
-      case "done":
-        return "#388e3c"; // Green
-      default:
-        return "#666";
-    }
-  };
-
-  const handleTicketMove = async (ticketId: string, newStatus: "todo" | "inProgress" | "done") => {
+  const handleTicketMove = async (
+    ticketId: string,
+    newStatus: "todo" | "inProgress" | "done",
+  ) => {
     try {
       await updateTicketStatus({ id: ticketId, status: newStatus });
     } catch (error) {
@@ -55,64 +56,77 @@ export const KanbanColumn = ({ title, tickets, status, sprintId }: KanbanColumnP
   };
 
   return (
-    <Paper
-      elevation={1}
+    <Card
+      elevation={0}
       sx={{
-        backgroundColor: getColumnColor(),
+        bgcolor: "grey.50",
         minHeight: 400,
-        border: `2px solid ${getColumnColor()}`,
-        borderRadius: 2,
+        borderRadius: 3,
+        border: "1px solid",
+        borderColor: "grey.200",
       }}
     >
       {/* Column Header */}
       <Box
         sx={{
-          p: 2,
-          borderBottom: `2px solid ${getHeaderColor()}`,
-          backgroundColor: 'white',
-          borderRadius: '8px 8px 0 0',
+          p: 3,
+          borderBottom: "1px solid",
+          borderColor: "grey.200",
+          bgcolor: "background.paper",
+          borderRadius: "12px 12px 0 0",
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 'bold',
-              color: getHeaderColor(),
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-            }}
-          >
-            {title}
-            <Typography
-              component="span"
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Avatar
               sx={{
-                backgroundColor: getHeaderColor(),
-                color: 'white',
-                borderRadius: '50%',
-                width: 24,
-                height: 24,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.875rem',
-                fontWeight: 'bold',
+                width: 32,
+                height: 32,
+                bgcolor: "grey.100",
+                color: "text.secondary",
               }}
             >
-              {tickets.length}
-            </Typography>
-          </Typography>
-          
+              {getColumnIcon()}
+            </Avatar>
+            <Box>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  color: "text.primary",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary",
+                  fontSize: "0.75rem",
+                }}
+              >
+                {tickets.length} {tickets.length === 1 ? "task" : "tasks"}
+              </Typography>
+            </Box>
+          </Box>
+
           <IconButton
             size="small"
             sx={{
-              backgroundColor: getHeaderColor(),
-              color: 'white',
-              '&:hover': {
-                backgroundColor: getHeaderColor(),
-                opacity: 0.8,
+              bgcolor: "grey.100",
+              color: "text.secondary",
+              "&:hover": {
+                bgcolor: "grey.200",
               },
+              width: 32,
+              height: 32,
             }}
           >
             <AddIcon fontSize="small" />
@@ -130,21 +144,35 @@ export const KanbanColumn = ({ title, tickets, status, sprintId }: KanbanColumnP
               onStatusChange={handleTicketMove}
             />
           ))}
-          
+
           {tickets.length === 0 && (
             <Box
               sx={{
-                textAlign: 'center',
-                py: 4,
-                color: 'text.secondary',
-                fontStyle: 'italic',
+                textAlign: "center",
+                py: 6,
+                color: "text.secondary",
+                fontStyle: "italic",
               }}
             >
-              No tickets in {title.toLowerCase()}
+              <Avatar
+                sx={{
+                  width: 48,
+                  height: 48,
+                  bgcolor: "grey.100",
+                  color: "text.secondary",
+                  mx: "auto",
+                  mb: 2,
+                }}
+              >
+                {getColumnIcon()}
+              </Avatar>
+              <Typography variant="body2">
+                No tasks in {title.toLowerCase()}
+              </Typography>
             </Box>
           )}
         </Stack>
       </Box>
-    </Paper>
+    </Card>
   );
 };
