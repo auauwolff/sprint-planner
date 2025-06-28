@@ -1,17 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  Button,
-  IconButton,
-  Avatar,
-} from "@mui/material";
+import { Box, Typography, Chip, Button, IconButton, Grid } from "@mui/material";
 import {
   Add as AddIcon,
   NavigateBefore,
@@ -244,9 +234,17 @@ export const SprintBoard = () => {
         </Box>
 
         {/* Kanban Board */}
-        <Box sx={{ maxWidth: 1200, mx: "auto" }}>
-          <Grid container spacing={3} justifyContent="center">
-            <Grid item xs={12} sm={6} md={4}>
+        <Box sx={{ maxWidth: 1000, mx: "auto" }}>
+          <Grid
+            container
+            spacing={3}
+            sx={{
+              width: "100%",
+              justifyContent: "center",
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <KanbanColumn
                 title="To Do"
                 tickets={todoTickets}
@@ -254,7 +252,7 @@ export const SprintBoard = () => {
                 sprintId={selectedSprint._id}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <KanbanColumn
                 title="In Progress"
                 tickets={inProgressTickets}
@@ -262,7 +260,7 @@ export const SprintBoard = () => {
                 sprintId={selectedSprint._id}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <KanbanColumn
                 title="Done"
                 tickets={doneTickets}
