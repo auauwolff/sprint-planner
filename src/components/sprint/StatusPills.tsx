@@ -1,79 +1,96 @@
-import { Box, Chip, Avatar } from "@mui/material";
-import { Person, Assignment, Schedule, Stars } from "@mui/icons-material";
+import { Box, Chip } from "@mui/material";
+import {
+  Code,
+  Assignment,
+  Schedule,
+  Stars,
+  CheckBoxOutlined,
+  PlayCircleOutline,
+  TaskAlt,
+} from "@mui/icons-material";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
 
 interface StatusPillsProps {
-  currentUser: any;
-  sprintSummary: any;
+  selectedSprintId: Id<"sprints">;
 }
 
-export const StatusPills = ({ currentUser, sprintSummary }: StatusPillsProps) => {
+export const StatusPills = ({ selectedSprintId }: StatusPillsProps) => {
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const sprintSummary = useQuery(api.tickets.getSprintSummary, {
+    sprintID: selectedSprintId,
+  });
   const pillStyle = {
     mr: 1,
     mb: 1,
     height: 32,
-    '& .MuiChip-label': {
+    "& .MuiChip-label": {
       px: 2,
       fontWeight: 500,
     },
   };
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+    <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
       {/* User Name Pill */}
       <Chip
-        avatar={
-          <Avatar sx={{ width: 24, height: 24, fontSize: '0.875rem' }}>
-            {currentUser?.name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-          </Avatar>
-        }
-        label={currentUser?.name || currentUser?.email || 'User'}
+        icon={<Code sx={{ fontSize: "1rem" }} />}
+        label={currentUser?.name || currentUser?.email || "Developer"}
+        variant="filled"
         color="primary"
         sx={pillStyle}
       />
 
       {/* Tasks Count */}
       <Chip
-        icon={<Assignment sx={{ fontSize: '1rem' }} />}
+        icon={<Assignment sx={{ fontSize: "1rem" }} />}
         label={`Tasks ${sprintSummary?.totalTickets || 0}`}
-        color="primary"
         variant="outlined"
+        color="primary"
         sx={pillStyle}
       />
 
       {/* Estimated Days */}
       <Chip
-        icon={<Schedule sx={{ fontSize: '1rem' }} />}
+        icon={<Schedule sx={{ fontSize: "1rem" }} />}
         label={`Days ${sprintSummary?.totalEstimatedDays || 0}`}
-        color="primary"
         variant="outlined"
+        color="primary"
         sx={pillStyle}
       />
 
       {/* Story Points */}
       <Chip
-        icon={<Stars sx={{ fontSize: '1rem' }} />}
+        icon={<Stars sx={{ fontSize: "1rem" }} />}
         label={`Story P. ${sprintSummary?.totalStoryPoints || 0}`}
-        color="primary"
         variant="outlined"
+        color="primary"
         sx={pillStyle}
       />
 
       {/* Status Counts */}
       <Chip
+        icon={<CheckBoxOutlined sx={{ fontSize: "1rem" }} />}
         label={`Todo ${sprintSummary?.todoCount || 0}`}
-        color="default"
+        variant="outlined"
+        color="primary"
         sx={pillStyle}
       />
 
       <Chip
+        icon={<PlayCircleOutline sx={{ fontSize: "1rem" }} />}
         label={`In Progress ${sprintSummary?.inProgressCount || 0}`}
-        color="warning"
+        variant="outlined"
+        color="primary"
         sx={pillStyle}
       />
 
       <Chip
+        icon={<TaskAlt sx={{ fontSize: "1rem" }} />}
         label={`Done ${sprintSummary?.doneCount || 0}`}
-        color="success"
+        variant="outlined"
+        color="primary"
         sx={pillStyle}
       />
     </Box>

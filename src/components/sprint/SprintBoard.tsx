@@ -29,10 +29,6 @@ export const SprintBoard = () => {
 
   // Get all sprints
   const sprints = useQuery(api.sprints.getAllSprints) || [];
-  const activeSprint = useQuery(api.sprints.getActiveSprint);
-
-  // Get current user
-  const currentUser = useQuery(api.users.getCurrentUser);
 
   // Sort sprints - active first, then upcoming, then done
   const sortedSprints = sprints.sort((a, b) => {
@@ -48,12 +44,6 @@ export const SprintBoard = () => {
       selectedSprint ? api.tickets.getTicketsBySprint : "skip",
       selectedSprint ? { sprintID: selectedSprint._id } : "skip",
     ) || [];
-
-  // Get sprint summary
-  const sprintSummary = useQuery(
-    selectedSprint ? api.tickets.getSprintSummary : "skip",
-    selectedSprint ? { sprintID: selectedSprint._id } : "skip",
-  );
 
   const todoTickets = sprintTickets.filter((t) => t.status === "todo");
   const inProgressTickets = sprintTickets.filter(
@@ -190,7 +180,7 @@ export const SprintBoard = () => {
 
       <Box sx={{ p: 2 }}>
         {/* Status Pills */}
-        <StatusPills currentUser={currentUser} sprintSummary={sprintSummary} />
+        <StatusPills selectedSprintId={selectedSprint._id} />
 
         {/* Sprint Week Title */}
         <Box sx={{ mt: 4, mb: 2 }}>
