@@ -221,8 +221,8 @@ export const SprintBoard = () => {
 
             {selectedSprint.status === "active" && (
               <Chip
-                label="Active Sprint"
-                color="success"
+                label="Active"
+                color="primary"
                 size="small"
                 sx={{ zIndex: 1 }}
               />
