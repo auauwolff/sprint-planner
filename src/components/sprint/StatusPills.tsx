@@ -32,7 +32,14 @@ export const StatusPills = ({ selectedSprintId }: StatusPillsProps) => {
   };
 
   return (
-    <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        gap: 1,
+      }}
+    >
       {/* User Name Pill */}
       <Chip
         icon={<Code sx={{ fontSize: "1rem" }} />}

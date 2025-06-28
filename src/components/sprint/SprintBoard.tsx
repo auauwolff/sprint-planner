@@ -88,17 +88,16 @@ export const SprintBoard = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 1400, mx: "auto", px: 2 }}>
+    <Box sx={{ maxWidth: { xs: "100%", lg: 1600 }, mx: "auto" }}>
       {/* Action Bar */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 2,
+          mb: 3,
           bgcolor: "#FFFFFF",
           p: 2,
-          borderRadius: 2,
           boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         }}
       >
@@ -170,14 +169,14 @@ export const SprintBoard = () => {
         </Button>
       </Box>
 
-      <Box sx={{ px: 1 }}>
+      <Box sx={{ px: { xs: 1, sm: 2, lg: 3 } }}>
         {/* Status Pills */}
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <StatusPills selectedSprintId={selectedSprint._id} />
         </Box>
 
         {/* Sprint Week Title */}
-        <Box sx={{ my: 1, maxWidth: 750, mx: "auto" }}>
+        <Box sx={{ mb: 1, maxWidth: 1300, mx: "auto" }}>
           <Box
             sx={{
               display: "flex",
@@ -234,10 +233,10 @@ export const SprintBoard = () => {
         </Box>
 
         {/* Kanban Board */}
-        <Box sx={{ maxWidth: 1000, mx: "auto" }}>
+        <Box sx={{ maxWidth: { xs: "100%", sm: 1200, lg: 1400 }, mx: "auto" }}>
           <Grid
             container
-            spacing={3}
+            spacing={{ xs: 2, sm: 3, lg: 4 }}
             sx={{
               width: "100%",
               justifyContent: "center",
