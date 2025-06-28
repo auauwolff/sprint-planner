@@ -183,7 +183,7 @@ export const SprintBoard = () => {
         <StatusPills selectedSprintId={selectedSprint._id} />
 
         {/* Sprint Week Title */}
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ my: 2 }}>
           <Box
             sx={{
               display: "flex",
@@ -213,9 +213,10 @@ export const SprintBoard = () => {
                 right: 0,
                 top: "50%",
                 height: "2px",
-                bgcolor: "primary.main",
+                bgcolor: "grey.300",
                 opacity: 0.3,
                 zIndex: 0,
+                mr: 8,
               }}
             />
 
