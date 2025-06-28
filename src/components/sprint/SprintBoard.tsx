@@ -155,7 +155,10 @@ export const SprintBoard = () => {
             >
               <Typography variant="h6">{selectedSprint.name}</Typography>
               <Chip
-                label={selectedSprint.status}
+                label={
+                  selectedSprint.status.charAt(0).toUpperCase() +
+                  selectedSprint.status.slice(1)
+                }
                 color={
                   selectedSprint.status === "active" ? "success" : "default"
                 }
