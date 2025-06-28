@@ -115,7 +115,7 @@ export const SprintBoard = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 4,
+          mb: 2,
           bgcolor: "#FFFFFF",
           p: 2,
         }}
@@ -188,67 +188,74 @@ export const SprintBoard = () => {
         </Button>
       </Box>
 
-      {/* Status Pills */}
-      <StatusPills currentUser={currentUser} sprintSummary={sprintSummary} />
+      <Box sx={{ p: 2 }}>
+        {/* Status Pills */}
+        <StatusPills currentUser={currentUser} sprintSummary={sprintSummary} />
 
-      {/* Sprint Week Title */}
-      <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography
-          variant="h5"
-          sx={{ fontWeight: "bold", color: "primary.main" }}
-        >
-          Week {selectedSprint.sprintWeek || 1}
-        </Typography>
-        {selectedSprint.status === "active" && (
-          <Chip
-            label="Active Sprint"
-            color="success"
-            size="small"
-            sx={{ ml: 2 }}
-          />
-        )}
-        {selectedSprint.status === "upcoming" && (
-          <Chip label="Upcoming" color="default" size="small" sx={{ ml: 2 }} />
-        )}
+        {/* Sprint Week Title */}
+        <Box sx={{ mt: 4, mb: 2 }}>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: "bold", color: "primary.main" }}
+          >
+            Week {selectedSprint.sprintWeek || 1}
+          </Typography>
+          {selectedSprint.status === "active" && (
+            <Chip
+              label="Active Sprint"
+              color="success"
+              size="small"
+              sx={{ ml: 2 }}
+            />
+          )}
+          {selectedSprint.status === "upcoming" && (
+            <Chip
+              label="Upcoming"
+              color="default"
+              size="small"
+              sx={{ ml: 2 }}
+            />
+          )}
+        </Box>
+
+        {/* Kanban Board */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <KanbanColumn
+              title="To Do"
+              tickets={todoTickets}
+              status="todo"
+              sprintId={selectedSprint._id}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <KanbanColumn
+              title="In Progress"
+              tickets={inProgressTickets}
+              status="inProgress"
+              sprintId={selectedSprint._id}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <KanbanColumn
+              title="Done"
+              tickets={doneTickets}
+              status="done"
+              sprintId={selectedSprint._id}
+            />
+          </Grid>
+        </Grid>
+
+        {/* Create Sprint Dialog */}
+        <CreateSprintDialog
+          open={isCreateDialogOpen}
+          onClose={() => setIsCreateDialogOpen(false)}
+          onSuccess={() => {
+            // After creating sprint, it will appear in the list automatically
+            // Optionally switch to the newly created sprint
+          }}
+        />
       </Box>
-
-      {/* Kanban Board */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <KanbanColumn
-            title="To Do"
-            tickets={todoTickets}
-            status="todo"
-            sprintId={selectedSprint._id}
-          />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <KanbanColumn
-            title="In Progress"
-            tickets={inProgressTickets}
-            status="inProgress"
-            sprintId={selectedSprint._id}
-          />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <KanbanColumn
-            title="Done"
-            tickets={doneTickets}
-            status="done"
-            sprintId={selectedSprint._id}
-          />
-        </Grid>
-      </Grid>
-
-      {/* Create Sprint Dialog */}
-      <CreateSprintDialog
-        open={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        onSuccess={() => {
-          // After creating sprint, it will appear in the list automatically
-          // Optionally switch to the newly created sprint
-        }}
-      />
     </Box>
   );
 };
