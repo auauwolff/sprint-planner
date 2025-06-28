@@ -8,6 +8,7 @@ export const createSprint = mutation({
     status: v.union(v.literal("active"), v.literal("done"), v.literal("upcoming")),
     start: v.number(), // Unix timestamp
     end: v.number(),   // Unix timestamp
+    sprintWeek: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const sprintId = await ctx.db.insert("sprints", {
@@ -15,6 +16,7 @@ export const createSprint = mutation({
       status: args.status,
       start: args.start,
       end: args.end,
+      sprintWeek: args.sprintWeek,
     });
     return sprintId;
   },
@@ -54,6 +56,7 @@ export const updateSprint = mutation({
     status: v.optional(v.union(v.literal("active"), v.literal("done"), v.literal("upcoming"))),
     start: v.optional(v.number()),
     end: v.optional(v.number()),
+    sprintWeek: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

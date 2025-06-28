@@ -29,6 +29,7 @@ export default defineSchema({
     status: v.union(v.literal("active"), v.literal("done"), v.literal("upcoming")),
     start: v.number(), // Unix timestamp
     end: v.number(),   // Unix timestamp
+    sprintWeek: v.optional(v.number()), // Week number
   }),
   
   // Tickets table
