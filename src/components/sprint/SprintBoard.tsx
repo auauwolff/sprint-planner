@@ -171,7 +171,7 @@ export const SprintBoard = () => {
 
       <Box sx={{ px: { xs: 1, sm: 2, lg: 3 } }}>
         {/* Status Pills */}
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <Box sx={{ display: "flex" }}>
           <StatusPills selectedSprintId={selectedSprint._id} />
         </Box>
 
@@ -186,9 +186,8 @@ export const SprintBoard = () => {
             }}
           >
             <Typography
-              variant="body1"
+              variant="body2"
               sx={{
-                fontWeight: "bold",
                 color: "primary.main",
                 zIndex: 1,
                 bgcolor: "background.default",
