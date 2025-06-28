@@ -98,7 +98,7 @@ export const SprintBoard = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: 2 }}>
       {/* Action Bar */}
       <Box
         sx={{
@@ -108,6 +108,8 @@ export const SprintBoard = () => {
           mb: 2,
           bgcolor: "#FFFFFF",
           p: 2,
+          borderRadius: 2,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         }}
       >
         <Box sx={{ display: "flex", gap: 2 }}>
@@ -178,12 +180,14 @@ export const SprintBoard = () => {
         </Button>
       </Box>
 
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ px: 1 }}>
         {/* Status Pills */}
-        <StatusPills selectedSprintId={selectedSprint._id} />
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <StatusPills selectedSprintId={selectedSprint._id} />
+        </Box>
 
         {/* Sprint Week Title */}
-        <Box sx={{ my: 2 }}>
+        <Box sx={{ my: 1, maxWidth: 750, mx: "auto" }}>
           <Box
             sx={{
               display: "flex",
@@ -240,32 +244,34 @@ export const SprintBoard = () => {
         </Box>
 
         {/* Kanban Board */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <KanbanColumn
-              title="To Do"
-              tickets={todoTickets}
-              status="todo"
-              sprintId={selectedSprint._id}
-            />
+        <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+          <Grid container spacing={3} justifyContent="center">
+            <Grid item xs={12} sm={6} md={4}>
+              <KanbanColumn
+                title="To Do"
+                tickets={todoTickets}
+                status="todo"
+                sprintId={selectedSprint._id}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <KanbanColumn
+                title="In Progress"
+                tickets={inProgressTickets}
+                status="inProgress"
+                sprintId={selectedSprint._id}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <KanbanColumn
+                title="Done"
+                tickets={doneTickets}
+                status="done"
+                sprintId={selectedSprint._id}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <KanbanColumn
-              title="In Progress"
-              tickets={inProgressTickets}
-              status="inProgress"
-              sprintId={selectedSprint._id}
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <KanbanColumn
-              title="Done"
-              tickets={doneTickets}
-              status="done"
-              sprintId={selectedSprint._id}
-            />
-          </Grid>
-        </Grid>
+        </Box>
 
         {/* Create Sprint Dialog */}
         <CreateSprintDialog
