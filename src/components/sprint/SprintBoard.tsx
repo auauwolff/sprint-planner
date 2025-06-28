@@ -144,17 +144,28 @@ export const SprintBoard = () => {
           </IconButton>
 
           <Box sx={{ textAlign: "center", minWidth: 200 }}>
-            <Typography variant="h6">{selectedSprint.name}</Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+                mb: 0.5,
+              }}
+            >
+              <Typography variant="h6">{selectedSprint.name}</Typography>
+              <Chip
+                label={selectedSprint.status.toUpperCase()}
+                color={
+                  selectedSprint.status === "active" ? "primary" : "default"
+                }
+                size="small"
+              />
+            </Box>
             <Typography variant="body2" color="text.secondary">
               {formatDate(selectedSprint.start)} -{" "}
               {formatDate(selectedSprint.end)}
             </Typography>
-            <Chip
-              label={selectedSprint.status.toUpperCase()}
-              color={selectedSprint.status === "active" ? "primary" : "default"}
-              size="small"
-              sx={{ mt: 0.5 }}
-            />
           </Box>
 
           <IconButton
