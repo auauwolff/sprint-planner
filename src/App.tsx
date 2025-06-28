@@ -10,209 +10,225 @@ import {
 import { api } from "../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Box,
+  TextField,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
+  IconButton,
+} from "@mui/material";
+import { ExitToApp, Add } from "@mui/icons-material";
 
 export default function App() {
   return (
     <>
-      <header className="sticky top-0 z-10 bg-light dark:bg-dark p-4 border-b-2 border-slate-200 dark:border-slate-800">
-        Convex + React + Convex Auth
-        <SignOutButton />
-      </header>
-      <main className="p-8 flex flex-col gap-16">
-        <h1 className="text-4xl font-bold text-center">
-          Convex + React + Convex Auth
-        </h1>
-        <Authenticated>
-          <Content />
-        </Authenticated>
-        <Unauthenticated>
-          <SignInForm />
-        </Unauthenticated>
-      </main>
+      <Authenticated>
+        <Dashboard />
+      </Authenticated>
+      <Unauthenticated>
+        <SignInForm />
+      </Unauthenticated>
     </>
   );
 }
 
-function SignOutButton() {
-  const { isAuthenticated } = useConvexAuth();
+function Dashboard() {
   const { signOut } = useAuthActions();
-  return (
-    <>
-      {isAuthenticated && (
-        <button
-          className="bg-slate-200 dark:bg-slate-800 text-dark dark:text-light rounded-md px-2 py-1"
-          onClick={() => void signOut()}
-        >
-          Sign out
-        </button>
-      )}
-    </>
-  );
-}
-
-function SignInForm() {
-  const { signIn } = useAuthActions();
-  const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <div className="flex flex-col gap-8 w-96 mx-auto">
-      <p>Log in to see the numbers</p>
-      <form
-        className="flex flex-col gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.target as HTMLFormElement);
-          formData.set("flow", flow);
-          void signIn("password", formData).catch((error) => {
-            setError(error.message);
-          });
-        }}
-      >
-        <input
-          className="bg-light dark:bg-dark text-dark dark:text-light rounded-md p-2 border-2 border-slate-200 dark:border-slate-800"
-          type="email"
-          name="email"
-          placeholder="Email"
-        />
-        <input
-          className="bg-light dark:bg-dark text-dark dark:text-light rounded-md p-2 border-2 border-slate-200 dark:border-slate-800"
-          type="password"
-          name="password"
-          placeholder="Password"
-        />
-        <button
-          className="bg-dark dark:bg-light text-light dark:text-dark rounded-md"
-          type="submit"
-        >
-          {flow === "signIn" ? "Sign in" : "Sign up"}
-        </button>
-        <div className="flex flex-row gap-2">
-          <span>
-            {flow === "signIn"
-              ? "Don't have an account?"
-              : "Already have an account?"}
-          </span>
-          <span
-            className="text-dark dark:text-light underline hover:no-underline cursor-pointer"
-            onClick={() => setFlow(flow === "signIn" ? "signUp" : "signIn")}
-          >
-            {flow === "signIn" ? "Sign up instead" : "Sign in instead"}
-          </span>
-        </div>
-        {error && (
-          <div className="bg-red-500/20 border-2 border-red-500/50 rounded-md p-2">
-            <p className="text-dark dark:text-light font-mono text-xs">
-              Error signing in: {error}
-            </p>
-          </div>
-        )}
-      </form>
-    </div>
-  );
-}
-
-function Content() {
   const { viewer, numbers } =
     useQuery(api.myFunctions.listNumbers, {
       count: 10,
     }) ?? {};
   const addNumber = useMutation(api.myFunctions.addNumber);
 
-  if (viewer === undefined || numbers === undefined) {
-    return (
-      <div className="mx-auto">
-        <p>loading... (consider a loading skeleton)</p>
-      </div>
-    );
-  }
+  const handleSignOut = () => {
+    void signOut();
+  };
+
+  const handleAddNumber = () => {
+    void addNumber({ value: Math.floor(Math.random() * 10) });
+  };
 
   return (
-    <div className="flex flex-col gap-8 max-w-lg mx-auto">
-      <p>Welcome {viewer ?? "Anonymous"}!</p>
-      <p>
-        Click the button below and open this page in another window - this data
-        is persisted in the Convex cloud database!
-      </p>
-      <p>
-        <button
-          className="bg-dark dark:bg-light text-light dark:text-dark text-sm px-4 py-2 rounded-md border-2"
-          onClick={() => {
-            void addNumber({ value: Math.floor(Math.random() * 10) });
-          }}
-        >
-          Add a random number
-        </button>
-      </p>
-      <p>
-        Numbers:{" "}
-        {numbers?.length === 0
-          ? "Click the button!"
-          : (numbers?.join(", ") ?? "...")}
-      </p>
-      <p>
-        Edit{" "}
-        <code className="text-sm font-bold font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded-md">
-          convex/myFunctions.ts
-        </code>{" "}
-        to change your backend
-      </p>
-      <p>
-        Edit{" "}
-        <code className="text-sm font-bold font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded-md">
-          src/App.tsx
-        </code>{" "}
-        to change your frontend
-      </p>
-      <div className="flex flex-col">
-        <p className="text-lg font-bold">Useful resources:</p>
-        <div className="flex gap-2">
-          <div className="flex flex-col gap-2 w-1/2">
-            <ResourceCard
-              title="Convex docs"
-              description="Read comprehensive documentation for all Convex features."
-              href="https://docs.convex.dev/home"
-            />
-            <ResourceCard
-              title="Stack articles"
-              description="Learn about best practices, use cases, and more from a growing
-            collection of articles, videos, and walkthroughs."
-              href="https://www.typescriptlang.org/docs/handbook/2/basic-types.html"
-            />
-          </div>
-          <div className="flex flex-col gap-2 w-1/2">
-            <ResourceCard
-              title="Templates"
-              description="Browse our collection of templates to get started quickly."
-              href="https://www.convex.dev/templates"
-            />
-            <ResourceCard
-              title="Discord"
-              description="Join our developer community to ask questions, trade tips & tricks,
-            and show off your projects."
-              href="https://www.convex.dev/community"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Sprint Planner
+          </Typography>
+          <Typography variant="body2" sx={{ mr: 2 }}>
+            Welcome, {viewer || "User"}!
+          </Typography>
+          <IconButton color="inherit" onClick={handleSignOut}>
+            <ExitToApp />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Dashboard
+          </Typography>
+          
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Random Numbers Demo
+              </Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                Click the button to add random numbers. This data is persisted in Convex!
+              </Typography>
+              
+              <Button 
+                variant="contained" 
+                startIcon={<Add />}
+                onClick={handleAddNumber}
+                sx={{ mb: 2 }}
+              >
+                Add Random Number
+              </Button>
+              
+              <Box>
+                <Typography variant="body1">
+                  Numbers: {numbers?.length === 0 ? "Click the button!" : (numbers?.join(", ") || "...")}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Welcome to Your Sprint Planner
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                This is your dashboard. You can start building your sprint planning features here.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+      </Container>
+    </Box>
   );
 }
 
-function ResourceCard({
-  title,
-  description,
-  href,
-}: {
-  title: string;
-  description: string;
-  href: string;
-}) {
+function SignInForm() {
+  const { signIn } = useAuthActions();
+  const { isLoading } = useConvexAuth();
+  const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    
+    const formData = new FormData();
+    formData.set("email", email);
+    formData.set("password", password);
+    formData.set("flow", flow);
+    
+    void signIn("password", formData).catch((error) => {
+      setError(error.message);
+    });
+  };
+
   return (
-    <div className="flex flex-col gap-2 bg-slate-200 dark:bg-slate-800 p-4 rounded-md h-28 overflow-auto">
-      <a href={href} className="text-sm underline hover:no-underline">
-        {title}
-      </a>
-      <p className="text-xs">{description}</p>
-    </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+      }}
+    >
+      <Container maxWidth="sm">
+        <Card sx={{ p: 4 }}>
+          <CardContent>
+            <Typography variant="h4" component="h1" gutterBottom align="center">
+              Sprint Planner
+            </Typography>
+            <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 3 }}>
+              {flow === "signIn" ? "Sign in to your account" : "Create a new account"}
+            </Typography>
+            
+            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+              
+              {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {error}
+                </Alert>
+              )}
+              
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  flow === "signIn" ? "Sign In" : "Sign Up"
+                )}
+              </Button>
+              
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="body2">
+                  {flow === "signIn" ? "Don't have an account? " : "Already have an account? "}
+                  <Button
+                    variant="text"
+                    onClick={() => {
+                      setFlow(flow === "signIn" ? "signUp" : "signIn");
+                      setError(null);
+                    }}
+                    disabled={isLoading}
+                  >
+                    {flow === "signIn" ? "Sign up" : "Sign in"}
+                  </Button>
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
 }
+
