@@ -4,7 +4,7 @@ import { SprintBoard } from "../sprint/SprintBoard";
 
 export const Dashboard = () => {
   return (
-    <Box sx={{ bgcolor: "#FAFAFA" }}>
+    <Box sx={{ height: "100vh", bgcolor: "#FAFAFA" }}>
       <DashboardAppBar />
       <SprintBoard />
     </Box>

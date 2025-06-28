@@ -183,29 +183,59 @@ export const SprintBoard = () => {
         <StatusPills selectedSprintId={selectedSprint._id} />
 
         {/* Sprint Week Title */}
-        <Box sx={{ mt: 4, mb: 2 }}>
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: "bold", color: "primary.main" }}
+        <Box sx={{ mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              position: "relative",
+            }}
           >
-            Week {selectedSprint.sprintWeek || 1}
-          </Typography>
-          {selectedSprint.status === "active" && (
-            <Chip
-              label="Active Sprint"
-              color="success"
-              size="small"
-              sx={{ ml: 2 }}
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: "bold",
+                color: "primary.main",
+                zIndex: 1,
+                bgcolor: "background.default",
+                pr: 2,
+              }}
+            >
+              Week {selectedSprint.sprintWeek || 1}
+            </Typography>
+
+            {/* Connecting line */}
+            <Box
+              sx={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: "50%",
+                height: "2px",
+                bgcolor: "primary.main",
+                opacity: 0.3,
+                zIndex: 0,
+              }}
             />
-          )}
-          {selectedSprint.status === "upcoming" && (
-            <Chip
-              label="Upcoming"
-              color="default"
-              size="small"
-              sx={{ ml: 2 }}
-            />
-          )}
+
+            {selectedSprint.status === "active" && (
+              <Chip
+                label="Active Sprint"
+                color="success"
+                size="small"
+                sx={{ zIndex: 1 }}
+              />
+            )}
+            {selectedSprint.status === "upcoming" && (
+              <Chip
+                label="Upcoming"
+                color="default"
+                size="small"
+                sx={{ zIndex: 1 }}
+              />
+            )}
+          </Box>
         </Box>
 
         {/* Kanban Board */}
