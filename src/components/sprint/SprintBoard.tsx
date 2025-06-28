@@ -149,7 +149,7 @@ export const SprintBoard = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 1,
+                gap: 2,
                 mb: 0.5,
               }}
             >
@@ -157,7 +157,7 @@ export const SprintBoard = () => {
               <Chip
                 label={selectedSprint.status}
                 color={
-                  selectedSprint.status === "active" ? "primary" : "default"
+                  selectedSprint.status === "active" ? "success" : "default"
                 }
                 size="small"
               />
