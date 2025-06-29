@@ -34,12 +34,16 @@ interface KanbanColumnProps {
   title: string;
   status: "todo" | "inProgress" | "done";
   sprintId: Id<"sprints">;
+  weekNumber?: number;
+  isUpcoming?: boolean;
 }
 
 export const KanbanColumn = ({
   title,
   status,
   sprintId,
+  weekNumber = 1,
+  isUpcoming = false,
 }: KanbanColumnProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newTicketTitle, setNewTicketTitle] = useState("");
@@ -51,14 +55,16 @@ export const KanbanColumn = ({
   const createTicket = useMutation(api.tickets.createTicket);
   const currentUser = useQuery(api.users.getCurrentUser);
 
-  // Fetch tickets for this column
+  // Fetch tickets for this column and week
   const allSprintTickets =
     useQuery(api.tickets.getTicketsBySprint, { sprintID: sprintId }) || [];
-  const tickets = allSprintTickets.filter((ticket) => ticket.status === status);
+  const tickets = allSprintTickets.filter(
+    (ticket) => ticket.status === status && ticket.sprintWeek === weekNumber,
+  );
 
-  // Make this column a droppable area
+  // Make this column a droppable area with week-specific ID
   const { setNodeRef } = useDroppable({
-    id: status,
+    id: `${status}-week-${weekNumber}`,
   });
 
   const getColumnIcon = () => {
@@ -89,7 +95,7 @@ export const KanbanColumn = ({
         storyPoints,
         estimatedDays,
         status,
-        sprintWeek: 1, // Default sprint week
+        sprintWeek: weekNumber, // Use the current week number
         sprintID: sprintId as any,
         userID: currentUser._id,
       });
@@ -119,11 +125,12 @@ export const KanbanColumn = ({
     <Card
       elevation={0}
       sx={{
-        bgcolor: "grey.50",
+        bgcolor: isUpcoming ? "grey.25" : "grey.50",
         minHeight: 400,
         borderRadius: 3,
         border: "1px solid",
-        borderColor: "grey.200",
+        borderColor: isUpcoming ? "grey.100" : "grey.200",
+        opacity: isUpcoming ? 0.8 : 1,
       }}
     >
       {/* Column Header */}
