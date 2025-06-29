@@ -135,6 +135,9 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
           transform: "translateY(-1px)",
         },
         cursor: isDragging ? "grabbing" : "grab",
+        "&:active": {
+          cursor: "grabbing",
+        },
       }}
     >
       <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
