@@ -36,6 +36,7 @@ interface KanbanColumnProps {
   sprintId: Id<"sprints">;
   weekNumber?: number;
   isUpcoming?: boolean;
+  tickets?: any[]; // Optional pre-filtered tickets
 }
 
 export const KanbanColumn = ({
@@ -44,6 +45,7 @@ export const KanbanColumn = ({
   sprintId,
   weekNumber = 1,
   isUpcoming = false,
+  tickets: preFilteredTickets,
 }: KanbanColumnProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newTicketTitle, setNewTicketTitle] = useState("");
@@ -55,12 +57,22 @@ export const KanbanColumn = ({
   const createTicket = useMutation(api.tickets.createTicket);
   const currentUser = useQuery(api.users.getCurrentUser);
 
-  // Fetch tickets for this column and week
+  // Use pre-filtered tickets if provided, otherwise fetch and filter
   const allSprintTickets =
-    useQuery(api.tickets.getTicketsBySprint, { sprintID: sprintId }) || [];
-  const tickets = allSprintTickets.filter(
-    (ticket) => ticket.status === status && ticket.sprintWeek === weekNumber,
-  );
+    useQuery(
+      preFilteredTickets ? ("skip" as any) : api.tickets.getTicketsBySprint,
+      preFilteredTickets ? ("skip" as any) : { sprintID: sprintId },
+    ) || [];
+
+  const tickets = preFilteredTickets
+    ? preFilteredTickets.filter(
+        (ticket: any) =>
+          ticket.status === status && ticket.sprintWeek === weekNumber,
+      )
+    : allSprintTickets.filter(
+        (ticket: any) =>
+          ticket.status === status && ticket.sprintWeek === weekNumber,
+      );
 
   // Make this column a droppable area with week-specific ID
   const { setNodeRef } = useDroppable({
@@ -208,11 +220,11 @@ export const KanbanColumn = ({
       {/* Tickets */}
       <Box ref={setNodeRef} sx={{ p: 2, minHeight: 200 }}>
         <SortableContext
-          items={tickets.map((t) => t._id)}
+          items={tickets.map((t: any) => t._id)}
           strategy={verticalListSortingStrategy}
         >
           <Stack spacing={2}>
-            {tickets.map((ticket) => (
+            {tickets.map((ticket: any) => (
               <TicketCard key={ticket._id} ticket={ticket} />
             ))}
 

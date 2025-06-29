@@ -40,8 +40,8 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isDragging ? "none" : transition, // Disable transition during drag
+    opacity: isDragging ? 0.8 : 1, // Less dramatic opacity change
   };
 
   // Edit form state
@@ -128,11 +128,11 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
         border: "1px solid",
         borderColor: "grey.200",
         borderRadius: 2,
-        transition: "all 0.2s ease-in-out",
+        transition: isDragging ? "none" : "all 0.2s ease-in-out", // Disable transition during drag
         "&:hover": {
           borderColor: "grey.300",
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          transform: "translateY(-1px)",
+          transform: isDragging ? "none" : "translateY(-1px)", // Disable hover transform during drag
         },
         cursor: isDragging ? "grabbing" : "grab",
         "&:active": {

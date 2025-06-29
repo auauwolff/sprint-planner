@@ -28,6 +28,10 @@ export const SprintBoard = () => {
   const [selectedSprintIndex, setSelectedSprintIndex] = useState(0);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [activeTicket, setActiveTicket] = useState<any>(null);
+  // Optimistic updates state - maps ticket ID to optimistic update
+  const [optimisticUpdates, setOptimisticUpdates] = useState<
+    Record<string, { status: string; sprintWeek: number }>
+  >({});
 
   // Get all sprints
   const sprints = useQuery(api.sprints.getAllSprints) || [];
@@ -39,7 +43,7 @@ export const SprintBoard = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 3, // Reduced for more responsive drag
       },
     }),
   );
@@ -53,11 +57,24 @@ export const SprintBoard = () => {
   const selectedSprint = sortedSprints[selectedSprintIndex];
 
   // Get tickets for the selected sprint (used in drag handlers)
-  const allSprintTickets =
+  const rawSprintTickets =
     useQuery(
       selectedSprint ? api.tickets.getTicketsBySprint : ("skip" as any),
       selectedSprint ? { sprintID: selectedSprint._id } : ("skip" as any),
     ) || [];
+
+  // Apply optimistic updates to tickets
+  const allSprintTickets = rawSprintTickets.map((ticket: any) => {
+    const optimisticUpdate = optimisticUpdates[ticket._id];
+    if (optimisticUpdate) {
+      return {
+        ...ticket,
+        status: optimisticUpdate.status,
+        sprintWeek: optimisticUpdate.sprintWeek,
+      };
+    }
+    return ticket;
+  });
 
   // Calculate current week based on sprint start date and today's date
   const getCurrentWeek = (sprintStartDate: number) => {
@@ -115,16 +132,21 @@ export const SprintBoard = () => {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveTicket(null);
 
-    if (!over) return;
+    if (!over) {
+      setActiveTicket(null);
+      return;
+    }
 
     const ticketId = active.id as string;
     const dropId = over.id as string;
 
     // Parse the drop ID to get status and week (format: "status-week-weekNumber")
     const dropParts = dropId.split("-");
-    if (dropParts.length !== 3 || dropParts[1] !== "week") return;
+    if (dropParts.length !== 3 || dropParts[1] !== "week") {
+      setActiveTicket(null);
+      return;
+    }
 
     const newStatus = dropParts[0] as "todo" | "inProgress" | "done";
     const newWeek = parseInt(dropParts[2]);
@@ -135,16 +157,39 @@ export const SprintBoard = () => {
       ticket &&
       (ticket.status !== newStatus || ticket.sprintWeek !== newWeek)
     ) {
+      // Apply optimistic update immediately
+      setOptimisticUpdates((prev) => ({
+        ...prev,
+        [ticketId]: { status: newStatus, sprintWeek: newWeek },
+      }));
+
       try {
+        // Update the database
         await updateTicket({
           id: ticketId as any,
           status: newStatus,
           sprintWeek: newWeek,
         });
+
+        // Remove optimistic update after successful server update
+        setOptimisticUpdates((prev) => {
+          const newUpdates = { ...prev };
+          delete newUpdates[ticketId];
+          return newUpdates;
+        });
       } catch (error) {
         console.error("Failed to update ticket:", error);
+        // Revert optimistic update on error
+        setOptimisticUpdates((prev) => {
+          const newUpdates = { ...prev };
+          delete newUpdates[ticketId];
+          return newUpdates;
+        });
       }
     }
+
+    // Clear active ticket immediately for smooth UX
+    setActiveTicket(null);
   };
 
   if (!selectedSprint) {
@@ -368,6 +413,7 @@ export const SprintBoard = () => {
                       sprintId={selectedSprint._id}
                       weekNumber={week.weekNumber}
                       isUpcoming={week.isUpcoming}
+                      tickets={allSprintTickets}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -377,6 +423,7 @@ export const SprintBoard = () => {
                       sprintId={selectedSprint._id}
                       weekNumber={week.weekNumber}
                       isUpcoming={week.isUpcoming}
+                      tickets={allSprintTickets}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -386,6 +433,7 @@ export const SprintBoard = () => {
                       sprintId={selectedSprint._id}
                       weekNumber={week.weekNumber}
                       isUpcoming={week.isUpcoming}
+                      tickets={allSprintTickets}
                     />
                   </Grid>
                 </Grid>
@@ -395,7 +443,14 @@ export const SprintBoard = () => {
 
           <DragOverlay>
             {activeTicket ? (
-              <Box sx={{ transform: "rotate(5deg)", opacity: 0.8 }}>
+              <Box
+                sx={{
+                  transform: "rotate(3deg)",
+                  opacity: 0.95,
+                  filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))",
+                  pointerEvents: "none",
+                }}
+              >
                 <TicketCard ticket={activeTicket} />
               </Box>
             ) : null}
