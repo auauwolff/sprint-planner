@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Id } from "../../../convex/_generated/dataModel";
+import { Id, Doc } from "../../../convex/_generated/dataModel";
 import {
   Box,
   Typography,
@@ -36,7 +36,7 @@ interface KanbanColumnProps {
   sprintId: Id<"sprints">;
   weekNumber?: number;
   isUpcoming?: boolean;
-  tickets?: any[]; // Optional pre-filtered tickets
+  tickets?: Doc<"tickets">[]; // Pre-filtered tickets with proper typing
 }
 
 export const KanbanColumn = ({
@@ -66,11 +66,11 @@ export const KanbanColumn = ({
 
   const tickets = preFilteredTickets
     ? preFilteredTickets.filter(
-        (ticket: any) =>
+        (ticket: Doc<"tickets">) =>
           ticket.status === status && ticket.sprintWeek === weekNumber,
       )
     : allSprintTickets.filter(
-        (ticket: any) =>
+        (ticket: Doc<"tickets">) =>
           ticket.status === status && ticket.sprintWeek === weekNumber,
       );
 
@@ -108,7 +108,7 @@ export const KanbanColumn = ({
         estimatedDays,
         status,
         sprintWeek: weekNumber, // Use the current week number
-        sprintID: sprintId as any,
+        sprintID: sprintId,
         userID: currentUser._id,
       });
 
@@ -220,11 +220,11 @@ export const KanbanColumn = ({
       {/* Tickets */}
       <Box ref={setNodeRef} sx={{ p: 2, minHeight: 200 }}>
         <SortableContext
-          items={tickets.map((t: any) => t._id)}
+          items={tickets.map((t: Doc<"tickets">) => t._id)}
           strategy={verticalListSortingStrategy}
         >
           <Stack spacing={2}>
-            {tickets.map((ticket: any) => (
+            {tickets.map((ticket: Doc<"tickets">) => (
               <TicketCard key={ticket._id} ticket={ticket} />
             ))}
 

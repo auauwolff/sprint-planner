@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { Doc } from "../../../convex/_generated/dataModel";
 import { Box, Typography, Chip, Button, IconButton, Grid } from "@mui/material";
 import {
   Add as AddIcon,
@@ -27,10 +28,13 @@ import { TicketCard } from "./TicketCard";
 export const SprintBoard = () => {
   const [selectedSprintIndex, setSelectedSprintIndex] = useState(0);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [activeTicket, setActiveTicket] = useState<any>(null);
+  const [activeTicket, setActiveTicket] = useState<Doc<"tickets"> | null>(null);
   // Optimistic updates state - maps ticket ID to optimistic update
   const [optimisticUpdates, setOptimisticUpdates] = useState<
-    Record<string, { status: string; sprintWeek: number }>
+    Record<
+      string,
+      { status: "todo" | "inProgress" | "done"; sprintWeek: number }
+    >
   >({});
 
   // Get all sprints
@@ -64,7 +68,7 @@ export const SprintBoard = () => {
     ) || [];
 
   // Apply optimistic updates to tickets
-  const allSprintTickets = rawSprintTickets.map((ticket: any) => {
+  const allSprintTickets = rawSprintTickets.map((ticket: Doc<"tickets">) => {
     const optimisticUpdate = optimisticUpdates[ticket._id];
     if (optimisticUpdate) {
       return {
@@ -122,8 +126,10 @@ export const SprintBoard = () => {
     const { active } = event;
     const ticketId = active.id as string;
 
-    const ticket = allSprintTickets.find((t: any) => t._id === ticketId);
-    setActiveTicket(ticket);
+    const ticket = allSprintTickets.find(
+      (t: Doc<"tickets">) => t._id === ticketId,
+    );
+    setActiveTicket(ticket || null);
   };
 
   const handleDragOver = (_event: DragOverEvent) => {
@@ -152,7 +158,9 @@ export const SprintBoard = () => {
     const newWeek = parseInt(dropParts[2]);
 
     // Only update if status or week actually changed
-    const ticket = allSprintTickets.find((t: any) => t._id === ticketId);
+    const ticket = allSprintTickets.find(
+      (t: Doc<"tickets">) => t._id === ticketId,
+    );
     if (
       ticket &&
       (ticket.status !== newStatus || ticket.sprintWeek !== newWeek)
@@ -166,7 +174,7 @@ export const SprintBoard = () => {
       try {
         // Update the database
         await updateTicket({
-          id: ticketId as any,
+          id: ticket._id,
           status: newStatus,
           sprintWeek: newWeek,
         });

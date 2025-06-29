@@ -17,11 +17,12 @@ import {
 import { Schedule, Stars, Edit, Delete } from "@mui/icons-material";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { Doc } from "../../../convex/_generated/dataModel";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 interface TicketCardProps {
-  ticket: any;
+  ticket: Doc<"tickets">;
 }
 
 export const TicketCard = ({ ticket }: TicketCardProps) => {

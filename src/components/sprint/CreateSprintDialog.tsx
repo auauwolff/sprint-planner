@@ -78,8 +78,10 @@ export const CreateSprintDialog = ({
       handleReset();
       onClose();
       onSuccess?.();
-    } catch (err: any) {
-      setError(err.message || "Failed to create sprint");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create sprint";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
