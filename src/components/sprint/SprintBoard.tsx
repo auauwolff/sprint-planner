@@ -28,19 +28,6 @@ export const SprintBoard = () => {
 
   const selectedSprint = sortedSprints[selectedSprintIndex];
 
-  // Get tickets for selected sprint
-  const sprintTickets =
-    useQuery(
-      selectedSprint ? api.tickets.getTicketsBySprint : "skip",
-      selectedSprint ? { sprintID: selectedSprint._id } : "skip",
-    ) || [];
-
-  const todoTickets = sprintTickets.filter((t) => t.status === "todo");
-  const inProgressTickets = sprintTickets.filter(
-    (t) => t.status === "inProgress",
-  );
-  const doneTickets = sprintTickets.filter((t) => t.status === "done");
-
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString("en-US", {
       month: "short",
@@ -245,7 +232,6 @@ export const SprintBoard = () => {
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <KanbanColumn
                 title="To Do"
-                tickets={todoTickets}
                 status="todo"
                 sprintId={selectedSprint._id}
               />
@@ -253,7 +239,6 @@ export const SprintBoard = () => {
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <KanbanColumn
                 title="In Progress"
-                tickets={inProgressTickets}
                 status="inProgress"
                 sprintId={selectedSprint._id}
               />
@@ -261,7 +246,6 @@ export const SprintBoard = () => {
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <KanbanColumn
                 title="Done"
-                tickets={doneTickets}
                 status="done"
                 sprintId={selectedSprint._id}
               />

@@ -27,14 +27,12 @@ import { TicketCard } from "./TicketCard";
 
 interface KanbanColumnProps {
   title: string;
-  tickets: any[];
   status: "todo" | "inProgress" | "done";
   sprintId: Id<"sprints">;
 }
 
 export const KanbanColumn = ({
   title,
-  tickets,
   status,
   sprintId,
 }: KanbanColumnProps) => {
@@ -45,9 +43,13 @@ export const KanbanColumn = ({
   const [estimatedDays, setEstimatedDays] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const updateTicketStatus = useMutation(api.tickets.updateTicketStatus);
   const createTicket = useMutation(api.tickets.createTicket);
   const currentUser = useQuery(api.users.getCurrentUser);
+
+  // Fetch tickets for this column
+  const allSprintTickets =
+    useQuery(api.tickets.getTicketsBySprint, { sprintID: sprintId }) || [];
+  const tickets = allSprintTickets.filter((ticket) => ticket.status === status);
 
   const getColumnIcon = () => {
     switch (status) {
@@ -59,17 +61,6 @@ export const KanbanColumn = ({
         return <TaskAlt color="success" />;
       default:
         return <CheckBoxOutlined />;
-    }
-  };
-
-  const handleTicketMove = async (
-    ticketId: string,
-    newStatus: "todo" | "inProgress" | "done",
-  ) => {
-    try {
-      await updateTicketStatus({ id: ticketId as any, status: newStatus });
-    } catch (error) {
-      console.error("Failed to update ticket status:", error);
     }
   };
 
@@ -201,11 +192,7 @@ export const KanbanColumn = ({
       <Box sx={{ p: 2 }}>
         <Stack spacing={2}>
           {tickets.map((ticket) => (
-            <TicketCard
-              key={ticket._id}
-              ticket={ticket}
-              onStatusChange={handleTicketMove}
-            />
+            <TicketCard key={ticket._id} ticket={ticket} />
           ))}
 
           {tickets.length === 0 && (

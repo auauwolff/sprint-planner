@@ -28,18 +28,9 @@ import { api } from "../../../convex/_generated/api";
 
 interface TicketCardProps {
   ticket: any;
-  onStatusChange: (
-    ticketId: string,
-    newStatus: "todo" | "inProgress" | "done",
-  ) => void;
-  onTicketUpdate?: () => void; // Optional callback for when ticket is updated/deleted
 }
 
-export const TicketCard = ({
-  ticket,
-  onStatusChange,
-  onTicketUpdate,
-}: TicketCardProps) => {
+export const TicketCard = ({ ticket }: TicketCardProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -55,6 +46,7 @@ export const TicketCard = ({
 
   // Mutations
   const updateTicket = useMutation(api.tickets.updateTicket);
+  const updateTicketStatus = useMutation(api.tickets.updateTicketStatus);
   const deleteTicket = useMutation(api.tickets.deleteTicket);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -65,8 +57,14 @@ export const TicketCard = ({
     setAnchorEl(null);
   };
 
-  const handleStatusChange = (newStatus: "todo" | "inProgress" | "done") => {
-    onStatusChange(ticket._id, newStatus);
+  const handleStatusChange = async (
+    newStatus: "todo" | "inProgress" | "done",
+  ) => {
+    try {
+      await updateTicketStatus({ id: ticket._id, status: newStatus });
+    } catch (error) {
+      console.error("Failed to update ticket status:", error);
+    }
     handleMenuClose();
   };
 
@@ -99,7 +97,7 @@ export const TicketCard = ({
       });
 
       setIsEditDialogOpen(false);
-      onTicketUpdate?.(); // Optional callback to refresh data
+      // Convex will automatically update the UI with reactive data
     } catch (error) {
       console.error("Failed to update ticket:", error);
     } finally {
@@ -112,7 +110,7 @@ export const TicketCard = ({
     try {
       await deleteTicket({ id: ticket._id });
       setIsDeleteDialogOpen(false);
-      onTicketUpdate?.(); // Optional callback to refresh data
+      // Convex will automatically update the UI with reactive data
     } catch (error) {
       console.error("Failed to delete ticket:", error);
     } finally {
