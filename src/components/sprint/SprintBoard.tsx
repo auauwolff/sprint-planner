@@ -176,7 +176,7 @@ export const SprintBoard = () => {
         </Box>
 
         {/* Sprint Week Title */}
-        <Box sx={{ mb: 1, maxWidth: 1300, mx: "auto" }}>
+        <Box sx={{ mb: 1, maxWidth: 1270, mx: "auto" }}>
           <Box
             sx={{
               display: "flex",

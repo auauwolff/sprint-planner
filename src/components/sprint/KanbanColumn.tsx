@@ -7,6 +7,7 @@ import {
   IconButton,
   Stack,
   Avatar,
+  Chip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -34,11 +35,11 @@ export const KanbanColumn = ({
   const getColumnIcon = () => {
     switch (status) {
       case "todo":
-        return <CheckBoxOutlined />;
+        return <CheckBoxOutlined color="primary" />;
       case "inProgress":
-        return <PlayCircleOutline />;
+        return <PlayCircleOutline color="warning" />;
       case "done":
-        return <TaskAlt />;
+        return <TaskAlt color="success" />;
       default:
         return <CheckBoxOutlined />;
     }
@@ -94,27 +95,30 @@ export const KanbanColumn = ({
             >
               {getColumnIcon()}
             </Avatar>
-            <Box>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 600,
-                  color: "text.primary",
-                  lineHeight: 1.2,
-                }}
-              >
-                {title}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "text.secondary",
-                  fontSize: "0.75rem",
-                }}
-              >
-                {tickets.length} {tickets.length === 1 ? "task" : "tasks"}
-              </Typography>
-            </Box>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 600,
+                color: "text.primary",
+                lineHeight: 1.2,
+              }}
+            >
+              {title}
+            </Typography>
+            <Chip
+              label={tickets.length}
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: "0.75rem",
+                bgcolor: "grey.200",
+                color: "text.secondary",
+                "& .MuiChip-label": {
+                  px: 1,
+                  py: 0,
+                },
+              }}
+            />
           </Box>
 
           <IconButton
@@ -129,7 +133,7 @@ export const KanbanColumn = ({
               height: 32,
             }}
           >
-            <AddIcon fontSize="small" />
+            <AddIcon fontSize="small" color="primary" />
           </IconButton>
         </Box>
       </Box>
