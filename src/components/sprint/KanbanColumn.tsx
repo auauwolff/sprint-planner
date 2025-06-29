@@ -1,5 +1,7 @@
-import { useMutation } from "convex/react";
+import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
 import {
   Box,
   Typography,
@@ -8,6 +10,12 @@ import {
   Stack,
   Avatar,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -21,7 +29,7 @@ interface KanbanColumnProps {
   title: string;
   tickets: any[];
   status: "todo" | "inProgress" | "done";
-  sprintId: string;
+  sprintId: Id<"sprints">;
 }
 
 export const KanbanColumn = ({
@@ -30,7 +38,15 @@ export const KanbanColumn = ({
   status,
   sprintId,
 }: KanbanColumnProps) => {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newTicketTitle, setNewTicketTitle] = useState("");
+  const [storyPoints, setStoryPoints] = useState<number>(1);
+  const [estimatedDays, setEstimatedDays] = useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const updateTicketStatus = useMutation(api.tickets.updateTicketStatus);
+  const createTicket = useMutation(api.tickets.createTicket);
+  const currentUser = useQuery(api.users.getCurrentUser);
 
   const getColumnIcon = () => {
     switch (status) {
@@ -50,10 +66,52 @@ export const KanbanColumn = ({
     newStatus: "todo" | "inProgress" | "done",
   ) => {
     try {
-      await updateTicketStatus({ id: ticketId, status: newStatus });
+      await updateTicketStatus({ id: ticketId as any, status: newStatus });
     } catch (error) {
       console.error("Failed to update ticket status:", error);
     }
+  };
+
+  const handleAddTicket = () => {
+    setIsAddDialogOpen(true);
+  };
+
+  const handleCreateTicket = async () => {
+    if (!newTicketTitle.trim() || !currentUser?._id) return;
+
+    setIsSubmitting(true);
+    try {
+      // Generate a simple card ID
+      const cardId = `TASK-${Date.now()}`;
+
+      await createTicket({
+        cardId,
+        title: newTicketTitle.trim(),
+        storyPoints,
+        estimatedDays,
+        status,
+        sprintWeek: 1, // Default sprint week
+        sprintID: sprintId as any,
+        userID: currentUser._id,
+      });
+
+      // Reset form and close dialog
+      setNewTicketTitle("");
+      setStoryPoints(1);
+      setEstimatedDays(1);
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to create ticket:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelAdd = () => {
+    setNewTicketTitle("");
+    setStoryPoints(1);
+    setEstimatedDays(1);
+    setIsAddDialogOpen(false);
   };
 
   return (
@@ -123,6 +181,7 @@ export const KanbanColumn = ({
 
           <IconButton
             size="small"
+            onClick={handleAddTicket}
             sx={{
               bgcolor: "grey.100",
               color: "text.secondary",
@@ -177,6 +236,64 @@ export const KanbanColumn = ({
           )}
         </Stack>
       </Box>
+
+      {/* Add Ticket Dialog */}
+      <Dialog
+        open={isAddDialogOpen}
+        onClose={handleCancelAdd}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Add New Task to {title}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
+            <TextField
+              label="Task Title"
+              value={newTicketTitle}
+              onChange={(e) => setNewTicketTitle(e.target.value)}
+              placeholder="Enter task description..."
+              multiline
+              rows={3}
+              fullWidth
+              autoFocus
+            />
+
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                label="Story Points"
+                type="number"
+                value={storyPoints}
+                onChange={(e) => setStoryPoints(parseInt(e.target.value) || 1)}
+                inputProps={{ min: 1, max: 100 }}
+                sx={{ flex: 1 }}
+              />
+
+              <TextField
+                label="Estimated Days"
+                type="number"
+                value={estimatedDays}
+                onChange={(e) =>
+                  setEstimatedDays(parseInt(e.target.value) || 1)
+                }
+                inputProps={{ min: 1, max: 30 }}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={handleCancelAdd} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateTicket}
+            variant="contained"
+            disabled={!newTicketTitle.trim() || isSubmitting}
+          >
+            {isSubmitting ? "Creating..." : "Add Task"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
