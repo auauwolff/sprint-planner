@@ -6,23 +6,15 @@ import {
   Box,
   Chip,
   IconButton,
-  Menu,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
   Button,
+  Tooltip,
 } from "@mui/material";
-import {
-  Schedule,
-  Stars,
-  Edit,
-  Delete,
-  DragIndicator,
-  MoreHoriz as MoreHorizIcon,
-} from "@mui/icons-material";
+import { Schedule, Stars, Edit, Delete } from "@mui/icons-material";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useSortable } from "@dnd-kit/sortable";
@@ -33,7 +25,6 @@ interface TicketCardProps {
 }
 
 export const TicketCard = ({ ticket }: TicketCardProps) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -60,19 +51,9 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
   const [editEstimatedDays, setEditEstimatedDays] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const open = Boolean(anchorEl);
-
   // Mutations
   const updateTicket = useMutation(api.tickets.updateTicket);
   const deleteTicket = useMutation(api.tickets.deleteTicket);
-
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
 
   const handleEditClick = () => {
     // Populate form with current ticket data
@@ -81,12 +62,10 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
     setEditStoryPoints(ticket.storyPoints);
     setEditEstimatedDays(ticket.estimatedDays);
     setIsEditDialogOpen(true);
-    handleMenuClose();
   };
 
   const handleDeleteClick = () => {
     setIsDeleteDialogOpen(true);
-    handleMenuClose();
   };
 
   const handleEditSubmit = async () => {
@@ -142,6 +121,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
       ref={setNodeRef}
       style={style}
       {...attributes}
+      {...listeners}
       elevation={0}
       sx={{
         bgcolor: "background.paper",
@@ -184,37 +164,45 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
           />
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <IconButton
-              {...listeners}
-              size="small"
-              sx={{
-                p: 0.5,
-                color: "text.secondary",
-                "&:hover": {
-                  bgcolor: "grey.100",
-                },
-                cursor: "grab",
-                "&:active": {
-                  cursor: "grabbing",
-                },
-              }}
-            >
-              <DragIndicator fontSize="small" />
-            </IconButton>
+            <Tooltip title="Edit Task">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditClick();
+                }}
+                sx={{
+                  p: 0.5,
+                  color: "text.secondary",
+                  "&:hover": {
+                    bgcolor: "grey.100",
+                    color: "primary.main",
+                  },
+                }}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-            <IconButton
-              size="small"
-              onClick={handleMenuClick}
-              sx={{
-                p: 0.5,
-                color: "text.secondary",
-                "&:hover": {
-                  bgcolor: "grey.100",
-                },
-              }}
-            >
-              <MoreHorizIcon fontSize="small" color="primary" />
-            </IconButton>
+            <Tooltip title="Delete Task">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick();
+                }}
+                sx={{
+                  p: 0.5,
+                  color: "text.secondary",
+                  "&:hover": {
+                    bgcolor: "grey.100",
+                    color: "error.main",
+                  },
+                }}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
 
@@ -274,35 +262,6 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
             }}
           />
         </Box>
-
-        {/* Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleMenuClose}
-          PaperProps={{
-            sx: {
-              mt: 1,
-              minWidth: 180,
-              borderRadius: 2,
-              border: "1px solid",
-              borderColor: "grey.200",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-            },
-          }}
-        >
-          <MenuItem onClick={handleEditClick} sx={{ py: 1 }}>
-            <Edit fontSize="small" sx={{ mr: 1.5, color: "text.secondary" }} />
-            Edit Task
-          </MenuItem>
-          <MenuItem
-            onClick={handleDeleteClick}
-            sx={{ py: 1, color: "error.main" }}
-          >
-            <Delete fontSize="small" sx={{ mr: 1.5 }} />
-            Delete Task
-          </MenuItem>
-        </Menu>
 
         {/* Edit Dialog */}
         <Dialog
