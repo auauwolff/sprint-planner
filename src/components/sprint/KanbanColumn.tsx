@@ -40,6 +40,7 @@ export const KanbanColumn = ({
 }: KanbanColumnProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newTicketTitle, setNewTicketTitle] = useState("");
+  const [cardId, setCardId] = useState("");
   const [storyPoints, setStoryPoints] = useState<number>(1);
   const [estimatedDays, setEstimatedDays] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,15 +78,12 @@ export const KanbanColumn = ({
   };
 
   const handleCreateTicket = async () => {
-    if (!newTicketTitle.trim() || !currentUser?._id) return;
+    if (!newTicketTitle.trim() || !cardId.trim() || !currentUser?._id) return;
 
     setIsSubmitting(true);
     try {
-      // Generate a simple card ID
-      const cardId = `TASK-${Date.now()}`;
-
       await createTicket({
-        cardId,
+        cardId: cardId.trim(),
         title: newTicketTitle.trim(),
         storyPoints,
         estimatedDays,
@@ -97,6 +95,7 @@ export const KanbanColumn = ({
 
       // Reset form and close dialog
       setNewTicketTitle("");
+      setCardId("");
       setStoryPoints(1);
       setEstimatedDays(1);
       setIsAddDialogOpen(false);
@@ -109,6 +108,7 @@ export const KanbanColumn = ({
 
   const handleCancelAdd = () => {
     setNewTicketTitle("");
+    setCardId("");
     setStoryPoints(1);
     setEstimatedDays(1);
     setIsAddDialogOpen(false);
@@ -248,6 +248,15 @@ export const KanbanColumn = ({
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
             <TextField
+              label="Card ID"
+              value={cardId}
+              onChange={(e) => setCardId(e.target.value)}
+              placeholder="e.g., ST-123, TASK-456, BUG-789"
+              fullWidth
+              autoFocus
+            />
+
+            <TextField
               label="Task Title"
               value={newTicketTitle}
               onChange={(e) => setNewTicketTitle(e.target.value)}
@@ -255,7 +264,6 @@ export const KanbanColumn = ({
               multiline
               rows={3}
               fullWidth
-              autoFocus
             />
 
             <Box sx={{ display: "flex", gap: 2 }}>
@@ -288,7 +296,7 @@ export const KanbanColumn = ({
           <Button
             onClick={handleCreateTicket}
             variant="contained"
-            disabled={!newTicketTitle.trim() || isSubmitting}
+            disabled={!newTicketTitle.trim() || !cardId.trim() || isSubmitting}
           >
             {isSubmitting ? "Creating..." : "Add Task"}
           </Button>

@@ -8,7 +8,6 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Avatar,
   Divider,
 } from "@mui/material";
 import {
@@ -17,7 +16,6 @@ import {
   Stars,
   Edit,
   Delete,
-  Assignment,
 } from "@mui/icons-material";
 
 interface TicketCardProps {
@@ -69,32 +67,24 @@ export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
-            mb: 2,
+            mb: 1,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Avatar
-              sx={{
-                width: 24,
-                height: 24,
-                bgcolor: "grey.100",
-                color: "text.secondary",
-              }}
-            >
-              <Assignment sx={{ fontSize: 14 }} />
-            </Avatar>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                color: "text.secondary",
-                fontSize: "0.75rem",
-                letterSpacing: "0.5px",
-              }}
-            >
-              {ticket.cardId}
-            </Typography>
-          </Box>
+          <Chip
+            label={ticket.cardId}
+            variant="filled"
+            color="info"
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              "& .MuiChip-label": {
+                px: 1.5,
+                py: 0,
+              },
+            }}
+          />
 
           <IconButton
             size="small"
@@ -107,7 +97,7 @@ export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
               },
             }}
           >
-            <MoreHorizIcon fontSize="small" />
+            <MoreHorizIcon fontSize="small" color="primary" />
           </IconButton>
         </Box>
 
@@ -115,9 +105,8 @@ export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
         <Typography
           variant="body2"
           sx={{
-            fontWeight: 500,
-            mb: 2.5,
-            lineHeight: 1.4,
+            fontWeight: 600,
+            my: 2,
             color: "text.primary",
             overflow: "hidden",
             display: "-webkit-box",
@@ -141,16 +130,13 @@ export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
             label={`${ticket.estimatedDays}d`}
             size="small"
             variant="outlined"
+            color="warning"
             sx={{
-              height: 28,
-              fontSize: "0.75rem",
-              fontWeight: 500,
-              bgcolor: "grey.50",
-              borderColor: "grey.200",
-              "& .MuiChip-icon": {
-                width: 16,
-                height: 16,
-                color: "text.secondary",
+              height: 22,
+              fontSize: "0.7rem",
+              "& .MuiChip-label": {
+                px: 1,
+                py: 0,
               },
             }}
           />
@@ -159,18 +145,14 @@ export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
             icon={<Stars sx={{ fontSize: "16px !important" }} />}
             label={ticket.storyPoints}
             size="small"
+            variant="outlined"
+            color="info"
             sx={{
-              height: 28,
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              bgcolor: "primary.50",
-              color: "primary.main",
-              border: "1px solid",
-              borderColor: "primary.200",
-              "& .MuiChip-icon": {
-                width: 16,
-                height: 16,
-                color: "primary.main",
+              height: 22,
+              fontSize: "0.7rem",
+              "& .MuiChip-label": {
+                px: 1,
+                py: 0,
               },
             }}
           />
