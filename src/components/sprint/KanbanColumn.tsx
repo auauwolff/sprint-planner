@@ -23,6 +23,11 @@ import {
   PlayCircleOutline,
   TaskAlt,
 } from "@mui/icons-material";
+import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { TicketCard } from "./TicketCard";
 
 interface KanbanColumnProps {
@@ -50,6 +55,11 @@ export const KanbanColumn = ({
   const allSprintTickets =
     useQuery(api.tickets.getTicketsBySprint, { sprintID: sprintId }) || [];
   const tickets = allSprintTickets.filter((ticket) => ticket.status === status);
+
+  // Make this column a droppable area
+  const { setNodeRef } = useDroppable({
+    id: status,
+  });
 
   const getColumnIcon = () => {
     switch (status) {
@@ -189,39 +199,44 @@ export const KanbanColumn = ({
       </Box>
 
       {/* Tickets */}
-      <Box sx={{ p: 2 }}>
-        <Stack spacing={2}>
-          {tickets.map((ticket) => (
-            <TicketCard key={ticket._id} ticket={ticket} />
-          ))}
+      <Box ref={setNodeRef} sx={{ p: 2, minHeight: 200 }}>
+        <SortableContext
+          items={tickets.map((t) => t._id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Stack spacing={2}>
+            {tickets.map((ticket) => (
+              <TicketCard key={ticket._id} ticket={ticket} />
+            ))}
 
-          {tickets.length === 0 && (
-            <Box
-              sx={{
-                textAlign: "center",
-                py: 6,
-                color: "text.secondary",
-                fontStyle: "italic",
-              }}
-            >
-              <Avatar
+            {tickets.length === 0 && (
+              <Box
                 sx={{
-                  width: 48,
-                  height: 48,
-                  bgcolor: "grey.100",
+                  textAlign: "center",
+                  py: 6,
                   color: "text.secondary",
-                  mx: "auto",
-                  mb: 2,
+                  fontStyle: "italic",
                 }}
               >
-                {getColumnIcon()}
-              </Avatar>
-              <Typography variant="body2">
-                No tasks in {title.toLowerCase()}
-              </Typography>
-            </Box>
-          )}
-        </Stack>
+                <Avatar
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    bgcolor: "grey.100",
+                    color: "text.secondary",
+                    mx: "auto",
+                    mb: 2,
+                  }}
+                >
+                  {getColumnIcon()}
+                </Avatar>
+                <Typography variant="body2">
+                  No tasks in {title.toLowerCase()}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </SortableContext>
       </Box>
 
       {/* Add Ticket Dialog */}

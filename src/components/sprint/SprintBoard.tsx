@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Box, Typography, Chip, Button, IconButton, Grid } from "@mui/material";
 import {
@@ -9,16 +9,40 @@ import {
   PersonAdd,
   PlayArrow,
 } from "@mui/icons-material";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { StatusPills } from "./StatusPills";
 import { CreateSprintDialog } from "./CreateSprintDialog";
+import { TicketCard } from "./TicketCard";
 
 export const SprintBoard = () => {
   const [selectedSprintIndex, setSelectedSprintIndex] = useState(0);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [activeTicket, setActiveTicket] = useState<any>(null);
 
   // Get all sprints
   const sprints = useQuery(api.sprints.getAllSprints) || [];
+
+  // Mutations
+  const updateTicketStatus = useMutation(api.tickets.updateTicketStatus);
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
 
   // Sort sprints - active first, then upcoming, then done
   const sortedSprints = sprints.sort((a, b) => {
@@ -27,6 +51,13 @@ export const SprintBoard = () => {
   });
 
   const selectedSprint = sortedSprints[selectedSprintIndex];
+
+  // Get tickets for the selected sprint (used in drag handlers)
+  const allSprintTickets =
+    useQuery(
+      selectedSprint ? api.tickets.getTicketsBySprint : ("skip" as any),
+      selectedSprint ? { sprintID: selectedSprint._id } : ("skip" as any),
+    ) || [];
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString("en-US", {
@@ -44,6 +75,38 @@ export const SprintBoard = () => {
     setSelectedSprintIndex(
       Math.min(sortedSprints.length - 1, selectedSprintIndex + 1),
     );
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const ticketId = active.id as string;
+
+    const ticket = allSprintTickets.find((t: any) => t._id === ticketId);
+    setActiveTicket(ticket);
+  };
+
+  const handleDragOver = (_event: DragOverEvent) => {
+    // Optional: Add visual feedback during drag over
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveTicket(null);
+
+    if (!over) return;
+
+    const ticketId = active.id as string;
+    const newStatus = over.id as "todo" | "inProgress" | "done";
+
+    // Only update if status actually changed
+    const ticket = allSprintTickets.find((t: any) => t._id === ticketId);
+    if (ticket && ticket.status !== newStatus) {
+      try {
+        await updateTicketStatus({ id: ticketId as any, status: newStatus });
+      } catch (error) {
+        console.error("Failed to update ticket status:", error);
+      }
+    }
   };
 
   if (!selectedSprint) {
@@ -219,39 +282,56 @@ export const SprintBoard = () => {
         </Box>
 
         {/* Kanban Board */}
-        <Box sx={{ maxWidth: { xs: "100%", sm: 1200, lg: 1400 }, mx: "auto" }}>
-          <Grid
-            container
-            spacing={{ xs: 2, sm: 3, lg: 4 }}
-            sx={{
-              width: "100%",
-              justifyContent: "center",
-              flexDirection: { xs: "column", sm: "row" },
-            }}
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <Box
+            sx={{ maxWidth: { xs: "100%", sm: 1200, lg: 1400 }, mx: "auto" }}
           >
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <KanbanColumn
-                title="To Do"
-                status="todo"
-                sprintId={selectedSprint._id}
-              />
+            <Grid
+              container
+              spacing={{ xs: 2, sm: 3, lg: 4 }}
+              sx={{
+                width: "100%",
+                justifyContent: "center",
+                flexDirection: { xs: "column", sm: "row" },
+              }}
+            >
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <KanbanColumn
+                  title="To Do"
+                  status="todo"
+                  sprintId={selectedSprint._id}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <KanbanColumn
+                  title="In Progress"
+                  status="inProgress"
+                  sprintId={selectedSprint._id}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <KanbanColumn
+                  title="Done"
+                  status="done"
+                  sprintId={selectedSprint._id}
+                />
+              </Grid>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <KanbanColumn
-                title="In Progress"
-                status="inProgress"
-                sprintId={selectedSprint._id}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <KanbanColumn
-                title="Done"
-                status="done"
-                sprintId={selectedSprint._id}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+          </Box>
+
+          <DragOverlay>
+            {activeTicket ? (
+              <Box sx={{ transform: "rotate(5deg)", opacity: 0.8 }}>
+                <TicketCard ticket={activeTicket} />
+              </Box>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
 
         {/* Create Sprint Dialog */}
         <CreateSprintDialog

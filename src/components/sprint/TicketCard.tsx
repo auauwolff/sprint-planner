@@ -8,7 +8,6 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -17,14 +16,17 @@ import {
   Button,
 } from "@mui/material";
 import {
-  MoreHoriz as MoreHorizIcon,
   Schedule,
   Stars,
   Edit,
   Delete,
+  DragIndicator,
+  MoreHoriz as MoreHorizIcon,
 } from "@mui/icons-material";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TicketCardProps {
   ticket: any;
@@ -34,6 +36,22 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Drag and drop
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: ticket._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   // Edit form state
   const [editCardId, setEditCardId] = useState("");
@@ -46,7 +64,6 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
 
   // Mutations
   const updateTicket = useMutation(api.tickets.updateTicket);
-  const updateTicketStatus = useMutation(api.tickets.updateTicketStatus);
   const deleteTicket = useMutation(api.tickets.deleteTicket);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -55,17 +72,6 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleStatusChange = async (
-    newStatus: "todo" | "inProgress" | "done",
-  ) => {
-    try {
-      await updateTicketStatus({ id: ticket._id, status: newStatus });
-    } catch (error) {
-      console.error("Failed to update ticket status:", error);
-    }
-    handleMenuClose();
   };
 
   const handleEditClick = () => {
@@ -133,6 +139,9 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
 
   return (
     <Card
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
       elevation={0}
       sx={{
         bgcolor: "background.paper",
@@ -145,7 +154,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           transform: "translateY(-1px)",
         },
-        cursor: "pointer",
+        cursor: isDragging ? "grabbing" : "grab",
       }}
     >
       <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
@@ -174,19 +183,39 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
             }}
           />
 
-          <IconButton
-            size="small"
-            onClick={handleMenuClick}
-            sx={{
-              p: 0.5,
-              color: "text.secondary",
-              "&:hover": {
-                bgcolor: "grey.100",
-              },
-            }}
-          >
-            <MoreHorizIcon fontSize="small" color="primary" />
-          </IconButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <IconButton
+              {...listeners}
+              size="small"
+              sx={{
+                p: 0.5,
+                color: "text.secondary",
+                "&:hover": {
+                  bgcolor: "grey.100",
+                },
+                cursor: "grab",
+                "&:active": {
+                  cursor: "grabbing",
+                },
+              }}
+            >
+              <DragIndicator fontSize="small" />
+            </IconButton>
+
+            <IconButton
+              size="small"
+              onClick={handleMenuClick}
+              sx={{
+                p: 0.5,
+                color: "text.secondary",
+                "&:hover": {
+                  bgcolor: "grey.100",
+                },
+              }}
+            >
+              <MoreHorizIcon fontSize="small" color="primary" />
+            </IconButton>
+          </Box>
         </Box>
 
         {/* Title */}
@@ -262,25 +291,6 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
             },
           }}
         >
-          <Typography
-            variant="caption"
-            sx={{ px: 2, py: 1, color: "text.secondary", fontWeight: 600 }}
-          >
-            MOVE TO
-          </Typography>
-          <MenuItem onClick={() => handleStatusChange("todo")} sx={{ py: 1 }}>
-            Move to To Do
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleStatusChange("inProgress")}
-            sx={{ py: 1 }}
-          >
-            Move to In Progress
-          </MenuItem>
-          <MenuItem onClick={() => handleStatusChange("done")} sx={{ py: 1 }}>
-            Move to Done
-          </MenuItem>
-          <Divider sx={{ my: 1 }} />
           <MenuItem onClick={handleEditClick} sx={{ py: 1 }}>
             <Edit fontSize="small" sx={{ mr: 1.5, color: "text.secondary" }} />
             Edit Task
