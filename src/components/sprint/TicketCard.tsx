@@ -9,6 +9,12 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
 } from "@mui/material";
 import {
   MoreHoriz as MoreHorizIcon,
@@ -17,6 +23,8 @@ import {
   Edit,
   Delete,
 } from "@mui/icons-material";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 interface TicketCardProps {
   ticket: any;
@@ -24,11 +32,30 @@ interface TicketCardProps {
     ticketId: string,
     newStatus: "todo" | "inProgress" | "done",
   ) => void;
+  onTicketUpdate?: () => void; // Optional callback for when ticket is updated/deleted
 }
 
-export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
+export const TicketCard = ({
+  ticket,
+  onStatusChange,
+  onTicketUpdate,
+}: TicketCardProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Edit form state
+  const [editCardId, setEditCardId] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editStoryPoints, setEditStoryPoints] = useState<number>(1);
+  const [editEstimatedDays, setEditEstimatedDays] = useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const open = Boolean(anchorEl);
+
+  // Mutations
+  const updateTicket = useMutation(api.tickets.updateTicket);
+  const deleteTicket = useMutation(api.tickets.deleteTicket);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -41,6 +68,69 @@ export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
   const handleStatusChange = (newStatus: "todo" | "inProgress" | "done") => {
     onStatusChange(ticket._id, newStatus);
     handleMenuClose();
+  };
+
+  const handleEditClick = () => {
+    // Populate form with current ticket data
+    setEditCardId(ticket.cardId);
+    setEditTitle(ticket.title);
+    setEditStoryPoints(ticket.storyPoints);
+    setEditEstimatedDays(ticket.estimatedDays);
+    setIsEditDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleDeleteClick = () => {
+    setIsDeleteDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editTitle.trim() || !editCardId.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await updateTicket({
+        id: ticket._id,
+        cardId: editCardId.trim(),
+        title: editTitle.trim(),
+        storyPoints: editStoryPoints,
+        estimatedDays: editEstimatedDays,
+      });
+
+      setIsEditDialogOpen(false);
+      onTicketUpdate?.(); // Optional callback to refresh data
+    } catch (error) {
+      console.error("Failed to update ticket:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    setIsSubmitting(true);
+    try {
+      await deleteTicket({ id: ticket._id });
+      setIsDeleteDialogOpen(false);
+      onTicketUpdate?.(); // Optional callback to refresh data
+    } catch (error) {
+      console.error("Failed to delete ticket:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditDialogOpen(false);
+    // Reset form
+    setEditCardId("");
+    setEditTitle("");
+    setEditStoryPoints(1);
+    setEditEstimatedDays(1);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -193,18 +283,134 @@ export const TicketCard = ({ ticket, onStatusChange }: TicketCardProps) => {
             Move to Done
           </MenuItem>
           <Divider sx={{ my: 1 }} />
-          <MenuItem onClick={handleMenuClose} sx={{ py: 1 }}>
+          <MenuItem onClick={handleEditClick} sx={{ py: 1 }}>
             <Edit fontSize="small" sx={{ mr: 1.5, color: "text.secondary" }} />
             Edit Task
           </MenuItem>
           <MenuItem
-            onClick={handleMenuClose}
+            onClick={handleDeleteClick}
             sx={{ py: 1, color: "error.main" }}
           >
             <Delete fontSize="small" sx={{ mr: 1.5 }} />
             Delete Task
           </MenuItem>
         </Menu>
+
+        {/* Edit Dialog */}
+        <Dialog
+          open={isEditDialogOpen}
+          onClose={handleEditCancel}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Edit Task</DialogTitle>
+          <DialogContent>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}
+            >
+              <TextField
+                label="Card ID"
+                value={editCardId}
+                onChange={(e) => setEditCardId(e.target.value)}
+                placeholder="e.g., ST-123, TASK-456, BUG-789"
+                fullWidth
+                autoFocus
+              />
+
+              <TextField
+                label="Task Title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Enter task description..."
+                multiline
+                rows={3}
+                fullWidth
+              />
+
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <TextField
+                  label="Story Points"
+                  type="number"
+                  value={editStoryPoints}
+                  onChange={(e) =>
+                    setEditStoryPoints(parseInt(e.target.value) || 1)
+                  }
+                  inputProps={{ min: 1, max: 100 }}
+                  sx={{ flex: 1 }}
+                />
+
+                <TextField
+                  label="Estimated Days"
+                  type="number"
+                  value={editEstimatedDays}
+                  onChange={(e) =>
+                    setEditEstimatedDays(parseInt(e.target.value) || 1)
+                  }
+                  inputProps={{ min: 1, max: 30 }}
+                  sx={{ flex: 1 }}
+                />
+              </Box>
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={handleEditCancel} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditSubmit}
+              variant="contained"
+              disabled={!editTitle.trim() || !editCardId.trim() || isSubmitting}
+            >
+              {isSubmitting ? "Updating..." : "Update Task"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={isDeleteDialogOpen}
+          onClose={handleDeleteCancel}
+          maxWidth="sm"
+        >
+          <DialogTitle>Delete Task</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Are you sure you want to delete this task?
+            </Typography>
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: "grey.50",
+                borderRadius: 1,
+                border: "1px solid",
+                borderColor: "grey.200",
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                {ticket.cardId}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {ticket.title}
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="error.main" sx={{ mt: 2 }}>
+              This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={handleDeleteCancel} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              variant="contained"
+              color="error"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Deleting..." : "Delete Task"}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </CardContent>
     </Card>
   );
