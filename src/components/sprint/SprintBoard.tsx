@@ -23,11 +23,15 @@ import {
 import { KanbanColumn } from "./KanbanColumn";
 import { StatusPills } from "./StatusPills";
 import { CreateSprintDialog } from "./CreateSprintDialog";
+import { AddTeamMemberDialog } from "../auth/AddTeamMemberDialog";
+import { TeamMembersList } from "../auth/TeamMembersList";
 import { TicketCard } from "./TicketCard";
 
 export const SprintBoard = () => {
   const [selectedSprintIndex, setSelectedSprintIndex] = useState(0);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAddTeamMemberDialogOpen, setIsAddTeamMemberDialogOpen] =
+    useState(false);
   const [activeTicket, setActiveTicket] = useState<Doc<"tickets"> | null>(null);
   // Optimistic updates state - maps ticket ID to optimistic update
   const [optimisticUpdates, setOptimisticUpdates] = useState<
@@ -251,7 +255,11 @@ export const SprintBoard = () => {
           >
             Start Sprint
           </Button>
-          <Button variant="outlined" startIcon={<PersonAdd />}>
+          <Button
+            variant="outlined"
+            startIcon={<PersonAdd />}
+            onClick={() => setIsAddTeamMemberDialogOpen(true)}
+          >
             Add Team Member
           </Button>
         </Box>
@@ -472,6 +480,15 @@ export const SprintBoard = () => {
           onSuccess={() => {
             // After creating sprint, it will appear in the list automatically
             // Optionally switch to the newly created sprint
+          }}
+        />
+
+        {/* Add Team Member Dialog */}
+        <AddTeamMemberDialog
+          open={isAddTeamMemberDialogOpen}
+          onClose={() => setIsAddTeamMemberDialogOpen(false)}
+          onSuccess={() => {
+            // Optionally refresh team members list or show a success message
           }}
         />
       </Box>

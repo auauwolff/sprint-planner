@@ -7,7 +7,7 @@ import { authTables } from "@convex-dev/auth/server";
 // The schema provides more precise TypeScript types.
 export default defineSchema({
   ...authTables,
-  
+
   // Override users table to add role
   users: defineTable({
     name: v.optional(v.string()),
@@ -22,23 +22,31 @@ export default defineSchema({
   })
     .index("email", ["email"])
     .index("phone", ["phone"]),
-  
+
   // Sprint table
   sprints: defineTable({
     name: v.string(),
-    status: v.union(v.literal("active"), v.literal("done"), v.literal("upcoming")),
+    status: v.union(
+      v.literal("active"),
+      v.literal("done"),
+      v.literal("upcoming"),
+    ),
     start: v.number(), // Unix timestamp
-    end: v.number(),   // Unix timestamp
+    end: v.number(), // Unix timestamp
     sprintWeek: v.optional(v.number()), // Week number
   }),
-  
+
   // Tickets table
   tickets: defineTable({
     cardId: v.string(),
     title: v.string(),
     storyPoints: v.number(),
     estimatedDays: v.number(),
-    status: v.union(v.literal("todo"), v.literal("inProgress"), v.literal("done")),
+    status: v.union(
+      v.literal("todo"),
+      v.literal("inProgress"),
+      v.literal("done"),
+    ),
     sprintWeek: v.number(),
     sprintID: v.id("sprints"),
     userID: v.id("users"),
@@ -46,9 +54,4 @@ export default defineSchema({
     .index("by_sprint", ["sprintID"])
     .index("by_user", ["userID"])
     .index("by_status", ["status"]),
-    
-  // Keep demo table for now
-  numbers: defineTable({
-    value: v.number(),
-  }),
 });
