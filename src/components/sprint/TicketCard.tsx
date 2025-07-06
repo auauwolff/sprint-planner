@@ -49,7 +49,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
   const [editCardId, setEditCardId] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editStoryPoints, setEditStoryPoints] = useState<number>(1);
-  const [editEstimatedDays, setEditEstimatedDays] = useState<number>(1);
+  const [editEstimatedDays, setEditEstimatedDays] = useState<number>(0.25);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Mutations
@@ -110,11 +110,20 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
     setEditCardId("");
     setEditTitle("");
     setEditStoryPoints(1);
-    setEditEstimatedDays(1);
+    setEditEstimatedDays(0.25);
   };
 
   const handleDeleteCancel = () => {
     setIsDeleteDialogOpen(false);
+  };
+
+  // Helper function to format estimated days display
+  const formatEstimatedTime = (days: number) => {
+    if (days < 1) {
+      const hours = days * 8; // Assuming 8-hour workday
+      return `${hours}h`;
+    }
+    return `${days}d`;
   };
 
   return (
@@ -236,7 +245,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
         >
           <Chip
             icon={<Schedule sx={{ fontSize: "16px !important" }} />}
-            label={`${ticket.estimatedDays}d`}
+            label={formatEstimatedTime(ticket.estimatedDays)}
             size="small"
             variant="outlined"
             color="warning"
@@ -310,16 +319,62 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
                   sx={{ flex: 1 }}
                 />
 
-                <TextField
-                  label="Estimated Days"
-                  type="number"
-                  value={editEstimatedDays}
-                  onChange={(e) =>
-                    setEditEstimatedDays(parseInt(e.target.value) || 1)
-                  }
-                  inputProps={{ min: 1, max: 30 }}
-                  sx={{ flex: 1 }}
-                />
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    label="Estimated Days"
+                    type="number"
+                    value={editEstimatedDays}
+                    onChange={(e) =>
+                      setEditEstimatedDays(parseFloat(e.target.value) || 0.25)
+                    }
+                    inputProps={{
+                      min: 0.25,
+                      max: 30,
+                      step: 0.25,
+                    }}
+                    fullWidth
+                  />
+                  <Box
+                    sx={{ display: "flex", gap: 0.5, mt: 1, flexWrap: "wrap" }}
+                  >
+                    {[
+                      { label: "2h", value: 0.25 },
+                      { label: "4h", value: 0.5 },
+                      { label: "1d", value: 1 },
+                      { label: "2d", value: 2 },
+                      { label: "3d", value: 3 },
+                      { label: "1w", value: 5 },
+                    ].map((option) => (
+                      <Chip
+                        key={option.label}
+                        label={option.label}
+                        size="small"
+                        variant={
+                          editEstimatedDays === option.value
+                            ? "filled"
+                            : "outlined"
+                        }
+                        color={
+                          editEstimatedDays === option.value
+                            ? "primary"
+                            : "default"
+                        }
+                        onClick={() => setEditEstimatedDays(option.value)}
+                        sx={{
+                          cursor: "pointer",
+                          height: 24,
+                          fontSize: "0.7rem",
+                          "&:hover": {
+                            bgcolor:
+                              editEstimatedDays === option.value
+                                ? "primary.main"
+                                : "grey.100",
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
               </Box>
             </Box>
           </DialogContent>

@@ -24,7 +24,7 @@ import { KanbanColumn } from "./KanbanColumn";
 import { StatusPills } from "./StatusPills";
 import { CreateSprintDialog } from "./CreateSprintDialog";
 import { AddTeamMemberDialog } from "../auth/AddTeamMemberDialog";
-import { TeamMembersList } from "../auth/TeamMembersList";
+
 import { TicketCard } from "./TicketCard";
 
 export const SprintBoard = () => {

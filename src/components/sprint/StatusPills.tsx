@@ -21,6 +21,18 @@ export const StatusPills = ({ selectedSprintId }: StatusPillsProps) => {
   const sprintSummary = useQuery(api.tickets.getSprintSummary, {
     sprintID: selectedSprintId,
   });
+
+  // Helper function to format total estimated time
+  const formatTotalEstimatedTime = (totalDays: number) => {
+    if (totalDays === 0) return "0d";
+    if (totalDays < 1) {
+      const hours = totalDays * 8; // Assuming 8-hour workday
+      return `${hours}h`;
+    }
+    // For values >= 1, show decimal days if not a whole number
+    return totalDays % 1 === 0 ? `${totalDays}d` : `${totalDays.toFixed(1)}d`;
+  };
+
   const pillStyle = {
     mr: 1,
     mb: 1,
@@ -61,7 +73,7 @@ export const StatusPills = ({ selectedSprintId }: StatusPillsProps) => {
       {/* Estimated Days */}
       <Chip
         icon={<Schedule sx={{ fontSize: "1rem" }} />}
-        label={`Days ${sprintSummary?.totalEstimatedDays || 0}`}
+        label={`Days ${formatTotalEstimatedTime(sprintSummary?.totalEstimatedDays || 0)}`}
         variant="outlined"
         color="primary"
         sx={pillStyle}

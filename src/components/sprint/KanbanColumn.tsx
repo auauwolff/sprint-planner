@@ -51,7 +51,7 @@ export const KanbanColumn = ({
   const [newTicketTitle, setNewTicketTitle] = useState("");
   const [cardId, setCardId] = useState("");
   const [storyPoints, setStoryPoints] = useState<number>(1);
-  const [estimatedDays, setEstimatedDays] = useState<number>(1);
+  const [estimatedDays, setEstimatedDays] = useState<number>(0.25);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createTicket = useMutation(api.tickets.createTicket);
@@ -116,7 +116,7 @@ export const KanbanColumn = ({
       setNewTicketTitle("");
       setCardId("");
       setStoryPoints(1);
-      setEstimatedDays(1);
+      setEstimatedDays(0.25);
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error("Failed to create ticket:", error);
@@ -129,7 +129,7 @@ export const KanbanColumn = ({
     setNewTicketTitle("");
     setCardId("");
     setStoryPoints(1);
-    setEstimatedDays(1);
+    setEstimatedDays(0.25);
     setIsAddDialogOpen(false);
   };
 
@@ -297,16 +297,58 @@ export const KanbanColumn = ({
                 sx={{ flex: 1 }}
               />
 
-              <TextField
-                label="Estimated Days"
-                type="number"
-                value={estimatedDays}
-                onChange={(e) =>
-                  setEstimatedDays(parseInt(e.target.value) || 1)
-                }
-                inputProps={{ min: 1, max: 30 }}
-                sx={{ flex: 1 }}
-              />
+              <Box sx={{ flex: 1 }}>
+                <TextField
+                  label="Estimated Days"
+                  type="number"
+                  value={estimatedDays}
+                  onChange={(e) =>
+                    setEstimatedDays(parseFloat(e.target.value) || 0.25)
+                  }
+                  inputProps={{
+                    min: 0.25,
+                    max: 30,
+                    step: 0.25,
+                  }}
+                  fullWidth
+                />
+                <Box
+                  sx={{ display: "flex", gap: 0.5, mt: 1, flexWrap: "wrap" }}
+                >
+                  {[
+                    { label: "2h", value: 0.25 },
+                    { label: "4h", value: 0.5 },
+                    { label: "1d", value: 1 },
+                    { label: "2d", value: 2 },
+                    { label: "3d", value: 3 },
+                    { label: "1w", value: 5 },
+                  ].map((option) => (
+                    <Chip
+                      key={option.label}
+                      label={option.label}
+                      size="small"
+                      variant={
+                        estimatedDays === option.value ? "filled" : "outlined"
+                      }
+                      color={
+                        estimatedDays === option.value ? "primary" : "default"
+                      }
+                      onClick={() => setEstimatedDays(option.value)}
+                      sx={{
+                        cursor: "pointer",
+                        height: 24,
+                        fontSize: "0.7rem",
+                        "&:hover": {
+                          bgcolor:
+                            estimatedDays === option.value
+                              ? "primary.main"
+                              : "grey.100",
+                        },
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
             </Box>
           </Box>
         </DialogContent>
