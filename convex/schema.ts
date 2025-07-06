@@ -50,8 +50,11 @@ export default defineSchema({
     sprintWeek: v.number(),
     sprintID: v.id("sprints"),
     userID: v.id("users"),
+    // Analytics timestamp
+    completedAt: v.optional(v.number()), // When the ticket was marked as done
   })
     .index("by_sprint", ["sprintID"])
     .index("by_user", ["userID"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_completed", ["completedAt"]),
 });

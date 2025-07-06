@@ -2,13 +2,24 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Doc } from "../../../convex/_generated/dataModel";
-import { Box, Typography, Chip, Button, IconButton, Grid } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Chip,
+  Button,
+  IconButton,
+  Grid,
+  Tab,
+  Tabs,
+} from "@mui/material";
 import {
   Add as AddIcon,
   NavigateBefore,
   NavigateNext,
   PersonAdd,
   PlayArrow,
+  Analytics,
+  ViewKanban,
 } from "@mui/icons-material";
 import {
   DndContext,
@@ -24,11 +35,13 @@ import { KanbanColumn } from "./KanbanColumn";
 import { StatusPills } from "./StatusPills";
 import { CreateSprintDialog } from "./CreateSprintDialog";
 import { AddTeamMemberDialog } from "../auth/AddTeamMemberDialog";
+import { SprintAnalytics } from "../analytics/SprintAnalytics";
 
 import { TicketCard } from "./TicketCard";
 
 export const SprintBoard = () => {
   const [selectedSprintIndex, setSelectedSprintIndex] = useState(0);
+  const [currentTab, setCurrentTab] = useState(0); // 0 for board, 1 for analytics
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddTeamMemberDialogOpen, setIsAddTeamMemberDialogOpen] =
     useState(false);
@@ -318,180 +331,203 @@ export const SprintBoard = () => {
         </Button>
       </Box>
 
-      <Box sx={{ px: { xs: 1, sm: 2, lg: 3 } }}>
-        {/* Status Pills */}
-        <Box sx={{ display: "flex" }}>
-          <StatusPills selectedSprintId={selectedSprint._id} />
-        </Box>
-
-        {/* Kanban Board with Drag and Drop */}
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
+      {/* View Tabs */}
+      <Box sx={{ px: { xs: 1, sm: 2, lg: 3 }, pt: 2 }}>
+        <Tabs
+          value={currentTab}
+          onChange={(_, newValue) => setCurrentTab(newValue)}
+          sx={{ mb: 2 }}
         >
-          {/* Sprint Weeks */}
-          {weeks.map((week) => (
-            <Box key={week.weekNumber} sx={{ mb: 4 }}>
-              {/* Week Title */}
-              <Box sx={{ mb: 2, maxWidth: 1270, mx: "auto" }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    position: "relative",
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: week.isCurrent
-                        ? "primary.main"
-                        : week.isUpcoming
-                          ? "grey.500"
-                          : "grey.400",
-                      zIndex: 1,
-                      bgcolor: "background.default",
-                      pr: 2,
-                      fontWeight: week.isCurrent ? 600 : 400,
-                    }}
-                  >
-                    Week {week.weekNumber}
-                  </Typography>
+          <Tab
+            icon={<ViewKanban />}
+            label="Sprint Board"
+            iconPosition="start"
+          />
+          <Tab icon={<Analytics />} label="Analytics" iconPosition="start" />
+        </Tabs>
+      </Box>
 
-                  {/* Connecting line */}
+      {/* Tab Content */}
+      {currentTab === 0 ? (
+        // Sprint Board View
+        <Box sx={{ px: { xs: 1, sm: 2, lg: 3 } }}>
+          {/* Status Pills */}
+          <Box sx={{ display: "flex" }}>
+            <StatusPills selectedSprintId={selectedSprint._id} />
+          </Box>
+
+          {/* Kanban Board with Drag and Drop */}
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            {/* Sprint Weeks */}
+            {weeks.map((week) => (
+              <Box key={week.weekNumber} sx={{ mb: 4 }}>
+                {/* Week Title */}
+                <Box sx={{ mb: 2, maxWidth: 1270, mx: "auto" }}>
                   <Box
                     sx={{
-                      position: "absolute",
-                      left: 0,
-                      right: 0,
-                      top: "50%",
-                      height: "2px",
-                      bgcolor: week.isCurrent ? "primary.main" : "grey.300",
-                      opacity: week.isCurrent ? 0.6 : 0.3,
-                      zIndex: 0,
-                      mr: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      position: "relative",
                     }}
-                  />
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: week.isCurrent
+                          ? "primary.main"
+                          : week.isUpcoming
+                            ? "grey.500"
+                            : "grey.400",
+                        zIndex: 1,
+                        bgcolor: "background.default",
+                        pr: 2,
+                        fontWeight: week.isCurrent ? 600 : 400,
+                      }}
+                    >
+                      Week {week.weekNumber}
+                    </Typography>
 
-                  {week.isCurrent && (
-                    <Chip
-                      label="Current Week"
-                      color="primary"
-                      size="small"
-                      sx={{ zIndex: 1 }}
+                    {/* Connecting line */}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        top: "50%",
+                        height: "2px",
+                        bgcolor: week.isCurrent ? "primary.main" : "grey.300",
+                        opacity: week.isCurrent ? 0.6 : 0.3,
+                        zIndex: 0,
+                        mr: 8,
+                      }}
                     />
-                  )}
-                  {week.isUpcoming && (
-                    <Chip
-                      label="Upcoming"
-                      color="default"
-                      size="small"
-                      sx={{ zIndex: 1, opacity: 0.7 }}
-                    />
-                  )}
-                  {week.isPast && (
-                    <Chip
-                      label="Completed"
-                      color="success"
-                      variant="outlined"
-                      size="small"
-                      sx={{ zIndex: 1, opacity: 0.7 }}
-                    />
-                  )}
+
+                    {week.isCurrent && (
+                      <Chip
+                        label="Current Week"
+                        color="primary"
+                        size="small"
+                        sx={{ zIndex: 1 }}
+                      />
+                    )}
+                    {week.isUpcoming && (
+                      <Chip
+                        label="Upcoming"
+                        color="default"
+                        size="small"
+                        sx={{ zIndex: 1, opacity: 0.7 }}
+                      />
+                    )}
+                    {week.isPast && (
+                      <Chip
+                        label="Completed"
+                        color="success"
+                        variant="outlined"
+                        size="small"
+                        sx={{ zIndex: 1, opacity: 0.7 }}
+                      />
+                    )}
+                  </Box>
                 </Box>
-              </Box>
 
-              {/* Kanban Board for this week */}
-              <Box
-                sx={{
-                  maxWidth: { xs: "100%", sm: 1200, lg: 1400 },
-                  mx: "auto",
-                  opacity: week.isUpcoming ? 0.7 : 1,
-                  filter: week.isUpcoming ? "grayscale(20%)" : "none",
-                }}
-              >
-                <Grid
-                  container
-                  spacing={{ xs: 2, sm: 3, lg: 4 }}
+                {/* Kanban Board for this week */}
+                <Box
                   sx={{
-                    width: "100%",
-                    justifyContent: "center",
-                    flexDirection: { xs: "column", sm: "row" },
+                    maxWidth: { xs: "100%", sm: 1200, lg: 1400 },
+                    mx: "auto",
+                    opacity: week.isUpcoming ? 0.7 : 1,
+                    filter: week.isUpcoming ? "grayscale(20%)" : "none",
                   }}
                 >
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <KanbanColumn
-                      title="To Do"
-                      status="todo"
-                      sprintId={selectedSprint._id}
-                      weekNumber={week.weekNumber}
-                      isUpcoming={week.isUpcoming}
-                      tickets={allSprintTickets}
-                    />
+                  <Grid
+                    container
+                    spacing={{ xs: 2, sm: 3, lg: 4 }}
+                    sx={{
+                      width: "100%",
+                      justifyContent: "center",
+                      flexDirection: { xs: "column", sm: "row" },
+                    }}
+                  >
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                      <KanbanColumn
+                        title="To Do"
+                        status="todo"
+                        sprintId={selectedSprint._id}
+                        weekNumber={week.weekNumber}
+                        isUpcoming={week.isUpcoming}
+                        tickets={allSprintTickets}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                      <KanbanColumn
+                        title="In Progress"
+                        status="inProgress"
+                        sprintId={selectedSprint._id}
+                        weekNumber={week.weekNumber}
+                        isUpcoming={week.isUpcoming}
+                        tickets={allSprintTickets}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                      <KanbanColumn
+                        title="Done"
+                        status="done"
+                        sprintId={selectedSprint._id}
+                        weekNumber={week.weekNumber}
+                        isUpcoming={week.isUpcoming}
+                        tickets={allSprintTickets}
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <KanbanColumn
-                      title="In Progress"
-                      status="inProgress"
-                      sprintId={selectedSprint._id}
-                      weekNumber={week.weekNumber}
-                      isUpcoming={week.isUpcoming}
-                      tickets={allSprintTickets}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <KanbanColumn
-                      title="Done"
-                      status="done"
-                      sprintId={selectedSprint._id}
-                      weekNumber={week.weekNumber}
-                      isUpcoming={week.isUpcoming}
-                      tickets={allSprintTickets}
-                    />
-                  </Grid>
-                </Grid>
+                </Box>
               </Box>
-            </Box>
-          ))}
+            ))}
 
-          <DragOverlay>
-            {activeTicket ? (
-              <Box
-                sx={{
-                  transform: "rotate(3deg)",
-                  opacity: 0.95,
-                  filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))",
-                  pointerEvents: "none",
-                }}
-              >
-                <TicketCard ticket={activeTicket} />
-              </Box>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+            <DragOverlay>
+              {activeTicket ? (
+                <Box
+                  sx={{
+                    transform: "rotate(3deg)",
+                    opacity: 0.95,
+                    filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <TicketCard ticket={activeTicket} />
+                </Box>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </Box>
+      ) : (
+        // Analytics View
+        <SprintAnalytics sprintId={selectedSprint._id} />
+      )}
 
-        {/* Create Sprint Dialog */}
-        <CreateSprintDialog
-          open={isCreateDialogOpen}
-          onClose={() => setIsCreateDialogOpen(false)}
-          onSuccess={() => {
-            // After creating sprint, it will appear in the list automatically
-            // Optionally switch to the newly created sprint
-          }}
-        />
+      {/* Create Sprint Dialog */}
+      <CreateSprintDialog
+        open={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSuccess={() => {
+          // After creating sprint, it will appear in the list automatically
+          // Optionally switch to the newly created sprint
+        }}
+      />
 
-        {/* Add Team Member Dialog */}
-        <AddTeamMemberDialog
-          open={isAddTeamMemberDialogOpen}
-          onClose={() => setIsAddTeamMemberDialogOpen(false)}
-          onSuccess={() => {
-            // Optionally refresh team members list or show a success message
-          }}
-        />
-      </Box>
+      {/* Add Team Member Dialog */}
+      <AddTeamMemberDialog
+        open={isAddTeamMemberDialogOpen}
+        onClose={() => setIsAddTeamMemberDialogOpen(false)}
+        onSuccess={() => {
+          // Optionally refresh team members list or show a success message
+        }}
+      />
     </Box>
   );
 };
