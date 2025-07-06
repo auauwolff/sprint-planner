@@ -38,6 +38,7 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
   const [isAddTeamMemberDialogOpen, setIsAddTeamMemberDialogOpen] =
     useState(false);
   const [activeTicket, setActiveTicket] = useState<Doc<"tickets"> | null>(null);
+  const [isStartingSprint, setIsStartingSprint] = useState(false);
   // Optimistic updates state - maps ticket ID to optimistic update
   const [optimisticUpdates, setOptimisticUpdates] = useState<
     Record<
@@ -51,6 +52,7 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
 
   // Mutations
   const updateTicket = useMutation(api.tickets.updateTicket);
+  const updateSprint = useMutation(api.sprints.updateSprint);
 
   // Sensors for drag and drop
   const sensors = useSensors(
@@ -209,6 +211,40 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
     setActiveTicket(null);
   };
 
+  const handleStartSprint = async () => {
+    if (
+      !selectedSprint ||
+      selectedSprint.status === "active" ||
+      isStartingSprint
+    ) {
+      return;
+    }
+
+    setIsStartingSprint(true);
+    try {
+      // First, set any currently active sprints to "done"
+      const activeSprints = sprints.filter(
+        (sprint) => sprint.status === "active",
+      );
+      for (const activeSprint of activeSprints) {
+        await updateSprint({
+          id: activeSprint._id,
+          status: "done",
+        });
+      }
+
+      // Then activate the selected sprint
+      await updateSprint({
+        id: selectedSprint._id,
+        status: "active",
+      });
+    } catch (error) {
+      console.error("Failed to start sprint:", error);
+    } finally {
+      setIsStartingSprint(false);
+    }
+  };
+
   if (!selectedSprint) {
     return (
       <>
@@ -255,10 +291,11 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
           <Button
             variant="contained"
             startIcon={<PlayArrow />}
-            disabled={selectedSprint.status === "active"}
+            disabled={selectedSprint.status === "active" || isStartingSprint}
             color="success"
+            onClick={handleStartSprint}
           >
-            Start Sprint
+            {isStartingSprint ? "Starting..." : "Start Sprint"}
           </Button>
           <Button
             variant="outlined"
