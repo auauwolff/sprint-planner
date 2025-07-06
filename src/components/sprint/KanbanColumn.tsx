@@ -138,11 +138,13 @@ export const KanbanColumn = ({
       elevation={0}
       sx={{
         bgcolor: isUpcoming ? "grey.25" : "grey.50",
-        minHeight: 400,
+        height: 500, // Fixed height instead of minHeight
         borderRadius: 3,
         border: "1px solid",
         borderColor: isUpcoming ? "grey.100" : "grey.200",
         opacity: isUpcoming ? 0.8 : 1,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Column Header */}
@@ -218,7 +220,15 @@ export const KanbanColumn = ({
       </Box>
 
       {/* Tickets */}
-      <Box ref={setNodeRef} sx={{ p: 2, minHeight: 200 }}>
+      <Box
+        ref={setNodeRef}
+        sx={{
+          p: 2,
+          flex: 1,
+          overflowY: "auto",
+          maxHeight: "calc(100% - 80px)", // Account for header height
+        }}
+      >
         <SortableContext
           items={tickets.map((t: Doc<"tickets">) => t._id)}
           strategy={verticalListSortingStrategy}
