@@ -2,24 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Doc } from "../../../convex/_generated/dataModel";
-import {
-  Box,
-  Typography,
-  Chip,
-  Button,
-  IconButton,
-  Grid,
-  Tab,
-  Tabs,
-} from "@mui/material";
+import { Box, Typography, Chip, Button, IconButton, Grid } from "@mui/material";
 import {
   Add as AddIcon,
   NavigateBefore,
   NavigateNext,
   PersonAdd,
   PlayArrow,
-  Analytics,
-  ViewKanban,
 } from "@mui/icons-material";
 import {
   DndContext,
@@ -39,9 +28,12 @@ import { SprintAnalytics } from "../analytics/SprintAnalytics";
 
 import { TicketCard } from "./TicketCard";
 
-export const SprintBoard = () => {
+interface SprintBoardProps {
+  currentView: "board" | "analytics";
+}
+
+export const SprintBoard = ({ currentView }: SprintBoardProps) => {
   const [selectedSprintIndex, setSelectedSprintIndex] = useState(0);
-  const [currentTab, setCurrentTab] = useState(0); // 0 for board, 1 for analytics
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddTeamMemberDialogOpen, setIsAddTeamMemberDialogOpen] =
     useState(false);
@@ -331,24 +323,8 @@ export const SprintBoard = () => {
         </Button>
       </Box>
 
-      {/* View Tabs */}
-      <Box sx={{ px: { xs: 1, sm: 2, lg: 3 }, pt: 2 }}>
-        <Tabs
-          value={currentTab}
-          onChange={(_, newValue) => setCurrentTab(newValue)}
-          sx={{ mb: 2 }}
-        >
-          <Tab
-            icon={<ViewKanban />}
-            label="Sprint Board"
-            iconPosition="start"
-          />
-          <Tab icon={<Analytics />} label="Analytics" iconPosition="start" />
-        </Tabs>
-      </Box>
-
-      {/* Tab Content */}
-      {currentTab === 0 ? (
+      {/* Content based on current view */}
+      {currentView === "board" ? (
         // Sprint Board View
         <Box sx={{ px: { xs: 1, sm: 2, lg: 3 } }}>
           {/* Status Pills */}
