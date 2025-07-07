@@ -9,7 +9,7 @@ export const Dashboard = () => {
   );
 
   return (
-    <Box sx={{ height: "100vh", bgcolor: "#FAFAFA" }}>
+    <Box sx={{ height: "100%", bgcolor: "#FAFAFA" }}>
       <DashboardAppBar
         currentView={currentView}
         onViewChange={setCurrentView}

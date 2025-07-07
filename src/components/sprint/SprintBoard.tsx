@@ -274,7 +274,7 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
   }
 
   return (
-    <Box sx={{ maxWidth: { xs: "100%", lg: 1600 }, mx: "auto" }}>
+    <Box>
       {/* Action Bar */}
       <Box
         sx={{
@@ -363,7 +363,13 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
       {/* Content based on current view */}
       {currentView === "board" ? (
         // Sprint Board View
-        <Box sx={{ px: { xs: 1, sm: 2, lg: 3 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           {/* Status Pills */}
           <Box sx={{ display: "flex" }}>
             <StatusPills selectedSprintId={selectedSprint._id} />
@@ -389,22 +395,19 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
                       position: "relative",
                     }}
                   >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: week.isCurrent
-                          ? "primary.main"
+                    <Chip
+                      label={`Week ${week.weekNumber}`}
+                      color={
+                        week.isCurrent
+                          ? "primary"
                           : week.isUpcoming
-                            ? "grey.500"
-                            : "grey.400",
-                        zIndex: 1,
-                        bgcolor: "background.default",
-                        pr: 2,
-                        fontWeight: week.isCurrent ? 600 : 400,
-                      }}
-                    >
-                      Week {week.weekNumber}
-                    </Typography>
+                            ? "default"
+                            : "success"
+                      }
+                      variant="outlined"
+                      size="small"
+                      sx={{ zIndex: 1, opacity: 0.7 }}
+                    />
 
                     {/* Connecting line */}
                     <Box
@@ -417,13 +420,15 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
                         bgcolor: week.isCurrent ? "primary.main" : "grey.300",
                         opacity: week.isCurrent ? 0.6 : 0.3,
                         zIndex: 0,
-                        mr: 8,
+                        mr: 0,
+                        ml: 8,
+                        width: "90%",
                       }}
                     />
 
                     {week.isCurrent && (
                       <Chip
-                        label="Current Week"
+                        label="Current"
                         color="primary"
                         size="small"
                         sx={{ zIndex: 1 }}
@@ -441,7 +446,7 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
                       <Chip
                         label="Completed"
                         color="success"
-                        variant="outlined"
+                        variant="filled"
                         size="small"
                         sx={{ zIndex: 1, opacity: 0.7 }}
                       />
@@ -452,8 +457,7 @@ export const SprintBoard = ({ currentView }: SprintBoardProps) => {
                 {/* Kanban Board for this week */}
                 <Box
                   sx={{
-                    maxWidth: { xs: "100%", sm: 1200, lg: 1400 },
-                    mx: "auto",
+                    width: 1200,
                     opacity: week.isUpcoming ? 0.7 : 1,
                     filter: week.isUpcoming ? "grayscale(20%)" : "none",
                   }}
